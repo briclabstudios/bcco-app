@@ -64,6 +64,16 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="apropos"
+        options={{
+          headerTitle: 'À propos',
+          tabBarLabel: 'À propos',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="information-circle-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="admin"
         options={{
           title: 'Admin',
