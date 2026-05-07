@@ -1,6 +1,6 @@
-import { ScrollView, StyleSheet, View } from 'react-native'
-import { Text } from 'react-native-paper'
-import { colors } from '../constants/theme'
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
+import { colors } from '../constants/theme';
 
 export default function PrivacyScreen() {
   return (
@@ -10,7 +10,7 @@ export default function PrivacyScreen() {
       <Text style={styles.date}>Dernière mise à jour : mai 2026</Text>
 
       <Section title="1. Présentation">
-        L'application BCCO Ronchin est développée et gérée par le Billard Club de Compétition et deOisirs (BCCO) de Ronchin, association loi 1901. Elle est destinée exclusivement aux membres du club.
+        L'application BCCO Ronchin est développée et gérée par le Billard Club du Canon d'Or, association loi 1901. Elle est destinée exclusivement aux membres du club.
       </Section>
 
       <Section title="2. Données collectées">
@@ -48,7 +48,7 @@ export default function PrivacyScreen() {
       </Section>
 
       <Section title="8. Vos droits">
-        Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits, contactez l'administrateur du club.
+        Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits, faites la demande à l'administrateur du club.
       </Section>
 
       <Section title="9. Contact">
