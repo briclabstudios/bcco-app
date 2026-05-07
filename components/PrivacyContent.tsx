@@ -1,6 +1,6 @@
-import { ScrollView, StyleSheet, View } from 'react-native'
-import { Text } from 'react-native-paper'
-import { colors } from '../constants/theme'
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
+import { colors } from '../constants/theme';
 
 export default function PrivacyContent() {
   return (
@@ -48,7 +48,7 @@ export default function PrivacyContent() {
       </Section>
 
       <Section title="8. Vos droits">
-        Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits, faites la demande à l'administrateur du club.
+        Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour exercer ces droits, vous pouvez en faire la demande à l'administrateur du club.
       </Section>
 
       <Section title="9. Contact">
