@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
 import NewsCard, { NewsPost } from '../../components/NewsCard'
 
-const TAGS = ['Tournoi', 'Annonce', 'Résultat', 'Événement', 'Snooker', 'Carambole']
+const TAGS = ['Carambole', 'Snooker', 'Annonce', 'Tournoi', 'Événement', 'Résultat']
 
 export default function ActualitesScreen() {
   const { session, profile } = useAuth()
@@ -76,24 +76,25 @@ export default function ActualitesScreen() {
   return (
     <View style={styles.container}>
       {/* Filtres */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filtersBar}
-        contentContainerStyle={styles.filtersContent}
-      >
-        {TAGS.map(tag => (
-          <Chip
-            key={tag}
-            selected={selectedTags.includes(tag)}
-            onPress={() => toggleTag(tag)}
-            style={[styles.chip, selectedTags.includes(tag) && styles.chipSelected]}
-            textStyle={{ color: selectedTags.includes(tag) ? colors.background : colors.text, fontSize: 12 }}
-          >
-            {tag}
-          </Chip>
-        ))}
-      </ScrollView>
+      <View style={styles.filtersBar}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersContent}
+        >
+          {TAGS.map(tag => (
+            <Chip
+              key={tag}
+              selected={selectedTags.includes(tag)}
+              onPress={() => toggleTag(tag)}
+              style={[styles.chip, selectedTags.includes(tag) && styles.chipSelected]}
+              textStyle={{ color: selectedTags.includes(tag) ? colors.background : colors.text, fontSize: 12 }}
+            >
+              {tag}
+            </Chip>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Liste */}
       <FlatList
@@ -145,13 +146,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   filtersBar: {
-    maxHeight: 54,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   filtersContent: {
     paddingHorizontal: 12,
-    paddingVertical: 10,
     gap: 8,
     alignItems: 'center',
   },
