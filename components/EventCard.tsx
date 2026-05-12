@@ -39,57 +39,65 @@ function formatEventDate(debut: string, fin: string | null): string {
     weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC',
   })
   if (!fin) return dateStr
-  const f = new Date(fin)
   const debutDay = debut.split('T')[0]
   const finDay   = fin.split('T')[0]
   if (debutDay === finDay) return dateStr
+  const f = new Date(fin)
   return `${dateStr} → ${f.toLocaleDateString('fr-FR', {
     weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC',
   })}`
 }
 
 export default function EventCard({ event, currentUserId }: Props) {
-  const router      = useRouter()
-  const typeConfig  = TYPE_CONFIG[event.type_evenement] ?? TYPE_CONFIG.autre
-  const isAuthor    = !!currentUserId && currentUserId === event.auteur_id
-  const authorName  = event.author ? `${event.author.prenom} ${event.author.nom}` : 'Auteur inconnu'
+  const router     = useRouter()
+  const typeConfig = TYPE_CONFIG[event.type_evenement] ?? TYPE_CONFIG.autre
+  const isAuthor   = !!currentUserId && currentUserId === event.auteur_id
+  const authorName = event.author ? `${event.author.prenom} ${event.author.nom}` : 'Auteur inconnu'
 
   return (
     <Card style={styles.card}>
-      <View style={styles.inner}>
-        <View style={[styles.typeBar, { backgroundColor: typeConfig.color }]} />
-        <View style={styles.body}>
-          <View style={styles.header}>
-            <Text style={styles.icon}>{typeConfig.icon}</Text>
-            <Text style={styles.titre} numberOfLines={1}>{event.titre}</Text>
-            <View style={[styles.disciplineChip, { backgroundColor: DISCIPLINE_COLORS[event.discipline] ?? colors.surfaceVariant }]}>
-              <Text style={styles.disciplineText}>{event.discipline}</Text>
-            </View>
-            {isAuthor && (
-              <IconButton
-                icon="pencil-outline"
-                iconColor={colors.textMuted}
-                size={16}
-                style={styles.editBtn}
-                onPress={() => router.push(`/agenda/edit/${event.id}`)}
-              />
-            )}
-          </View>
-          <Text style={styles.date}>{formatEventDate(event.date_debut, event.date_fin)}</Text>
-          {event.description ? (
-            <Text style={styles.description} numberOfLines={2}>{event.description}</Text>
-          ) : null}
-          <Text style={styles.author}>Publié par {authorName}</Text>
+
+      {/* Ligne tags : discipline */}
+      <View style={styles.tags}>
+        <View style={[styles.tag, { backgroundColor: DISCIPLINE_COLORS[event.discipline] ?? colors.surfaceVariant }]}>
+          <Text style={styles.tagText}>#{event.discipline}</Text>
+        </View>
+        <View style={[styles.tag, { backgroundColor: typeConfig.color + '33', borderWidth: 1, borderColor: typeConfig.color }]}>
+          <Text style={[styles.tagText, { color: typeConfig.color }]}>{event.type_evenement}</Text>
         </View>
       </View>
 
+      {/* Titre avec icône type à gauche */}
+      <Card.Content style={styles.content}>
+        <View style={styles.titreRow}>
+          <Text style={styles.icon}>{typeConfig.icon}</Text>
+          <Text style={styles.titre}>{event.titre}</Text>
+        </View>
+        <Text style={styles.date}>{formatEventDate(event.date_debut, event.date_fin)}</Text>
+        {event.description ? (
+          <Text style={styles.description} numberOfLines={2}>{event.description}</Text>
+        ) : null}
+      </Card.Content>
+
+      {/* Image */}
       {event.image_url ? (
-        <Image
-          source={{ uri: event.image_url }}
-          style={styles.image}
-          resizeMode="cover"
-        />
+        <Image source={{ uri: event.image_url }} style={styles.image} resizeMode="cover" />
       ) : null}
+
+      {/* Footer : auteur + bouton éditer */}
+      <View style={styles.footer}>
+        <Text style={styles.author}>Publié par {authorName}</Text>
+        {isAuthor && (
+          <IconButton
+            icon="pencil-outline"
+            iconColor={colors.textMuted}
+            size={18}
+            style={styles.editBtn}
+            onPress={() => router.push(`/agenda/edit/${event.id}`)}
+          />
+        )}
+      </View>
+
     </Card>
   )
 }
@@ -100,50 +108,43 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
     marginHorizontal: 12,
     marginBottom: 10,
-    overflow: 'hidden',
   },
-  inner:   { flexDirection: 'row' },
-  typeBar: { width: 4 },
-  body:    { flex: 1, padding: 12, gap: 4 },
-  header:  { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  icon:    { fontSize: 16 },
-  titre: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: colors.text,
+  tags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    padding: 12,
+    paddingBottom: 4,
   },
-  disciplineChip: {
+  tag: {
     borderRadius: 4,
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     paddingVertical: 2,
   },
-  disciplineText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-  editBtn: { margin: 0, marginRight: -4 },
+  tagText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+  content: { paddingTop: 8, gap: 6 },
+  titreRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
+  icon:  { fontSize: 16, marginTop: 1 },
+  titre: { flex: 1, fontSize: 16, fontWeight: 'bold', color: colors.text },
   date: {
     fontSize: 12,
     color: colors.gold,
     textTransform: 'capitalize',
-  },
-  description: {
-    fontSize: 13,
-    color: colors.textMuted,
-    lineHeight: 18,
-  },
-  author: {
-    fontSize: 11,
-    color: colors.textMuted,
     marginTop: 2,
   },
-  image: {
-    width: '100%',
-    height: 200,
+  description: { fontSize: 14, color: colors.textMuted, lineHeight: 20 },
+  image: { width: '100%', height: 200, marginTop: 10 },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+    paddingTop: 8,
   },
+  author: { fontSize: 12, color: colors.textMuted, flex: 1 },
+  editBtn: { margin: 0 },
 })

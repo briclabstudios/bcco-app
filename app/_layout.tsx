@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { View, Image, Animated, StyleSheet } from 'react-native'
-import { Stack, useRouter } from 'expo-router'
+import { View, Image, Animated, StyleSheet, Platform } from 'react-native'
+import { Stack, useRouter, usePathname } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { PaperProvider } from 'react-native-paper'
 import * as Notifications from 'expo-notifications'
@@ -47,10 +47,16 @@ function NotificationHandler() {
 }
 
 export default function RootLayout() {
-  const [splashDone, setSplashDone] = useState(false)
-  const opacity = useRef(new Animated.Value(1)).current
+  const pathname = usePathname()
+
+  // Pas de splash sur web si on arrive directement sur /privacy
+  const skipSplash = Platform.OS === 'web' && pathname === '/privacy'
+
+  const [splashDone, setSplashDone] = useState(skipSplash)
+  const opacity = useRef(new Animated.Value(skipSplash ? 0 : 1)).current
 
   useEffect(() => {
+    if (skipSplash) return
     const timer = setTimeout(() => {
       Animated.timing(opacity, {
         toValue: 0,

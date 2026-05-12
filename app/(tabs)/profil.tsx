@@ -30,6 +30,7 @@ export default function ProfilScreen() {
   const [disciplines, setDisciplines] = useState<string[]>([])
   const [avatarUri, setAvatarUri]   = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [breakMax, setBreakMax]     = useState<string>('')
 
   if (!session) {
     return (
@@ -60,6 +61,7 @@ export default function ProfilScreen() {
     setPrenom(profile?.prenom ?? '')
     setNom(profile?.nom ?? '')
     setDisciplines(profile?.disciplines ?? [])
+    setBreakMax(profile?.break_max != null ? String(profile.break_max) : '')
     setAvatarUri(null)
     setEditing(true)
   }
@@ -121,9 +123,16 @@ export default function ProfilScreen() {
       const uploaded = await uploadAvatar()
       if (uploaded) newAvatarUrl = uploaded
     }
+    const parsedBreak = breakMax.trim() !== '' ? parseInt(breakMax.trim(), 10) : null
     const { error } = await supabase
       .from('profiles')
-      .update({ prenom: prenom.trim(), nom: nom.trim(), disciplines, avatar_url: newAvatarUrl })
+      .update({
+        prenom: prenom.trim(),
+        nom: nom.trim(),
+        disciplines,
+        avatar_url: newAvatarUrl,
+        break_max: isNaN(parsedBreak as number) ? null : parsedBreak,
+      })
       .eq('id', session.user.id)
     if (error) {
       Alert.alert('Erreur', 'Impossible de sauvegarder les modifications.')
@@ -180,6 +189,23 @@ export default function ProfilScreen() {
             textColor={colors.text}
             style={styles.input}
             theme={{ colors: { onSurfaceVariant: colors.textMuted, background: colors.surface } }}
+          />
+        </View>
+
+        {/* Records */}
+        <View style={styles.card}>
+          <Text style={styles.sectionLabel}>Mes records</Text>
+          <TextInput
+            label="Break maximum"
+            value={breakMax}
+            onChangeText={setBreakMax}
+            mode="outlined"
+            outlineColor={colors.border}
+            activeOutlineColor={colors.gold}
+            textColor={colors.text}
+            style={styles.input}
+            theme={{ colors: { onSurfaceVariant: colors.textMuted, background: colors.surface } }}
+            keyboardType="numeric"
           />
         </View>
 
@@ -251,6 +277,15 @@ export default function ProfilScreen() {
           }
         />
         <InfoRow label="Rôle" value={ROLE_LABEL[profile?.role ?? ''] ?? profile?.role ?? '—'} />
+      </View>
+
+      {/* Mes records */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Mes records</Text>
+        <InfoRow
+          label="Break maximum"
+          value={profile?.break_max != null ? String(profile.break_max) : '—'}
+        />
       </View>
 
       {/* Préférences notifications */}

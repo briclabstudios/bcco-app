@@ -1,88 +1,195 @@
-import { Tabs } from 'expo-router'
+import { Drawer } from 'expo-router/drawer'
+import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer'
 import { Ionicons } from '@expo/vector-icons'
+import { View, Image, StyleSheet } from 'react-native'
+import { Text, Divider } from 'react-native-paper'
+import { usePathname, useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
 import HeaderLogo from '../../components/HeaderLogo'
+import { supabase } from '../../lib/supabase'
 
-export default function TabsLayout() {
-  const { profile } = useAuth()
-  const isAdmin = profile?.role === 'admin'
+const MENU_ITEMS = [
+  { label: 'Actualités',   icon: 'newspaper-outline',          href: '/(tabs)/'            },
+  { label: 'Agenda',       icon: 'calendar-outline',           href: '/(tabs)/agenda'      },
+  { label: 'Check-in',    icon: 'location-outline',           href: '/(tabs)/checkin'     },
+  { label: 'Break board',  icon: 'trophy-outline',             href: '/(tabs)/breakboard'  },
+  { label: 'Liens utiles', icon: 'link-outline',              href: '/(tabs)/liens'       },
+  { label: 'Mon profil',   icon: 'person-outline',             href: '/(tabs)/profil'      },
+  { label: 'À propos',    icon: 'information-circle-outline', href: '/(tabs)/apropos'     },
+] as const
+
+function CustomDrawerContent(props: any) {
+  const { profile }  = useAuth()
+  const router       = useRouter()
+  const pathname     = usePathname()
+  const [checkinCount, setCheckinCount] = useState(0)
+
+  useEffect(() => {
+    async function fetchCount() {
+      const { count } = await supabase
+        .from('checkins')
+        .select('*', { count: 'exact', head: true })
+      setCheckinCount(count ?? 0)
+    }
+    fetchCount()
+
+    const channel = supabase
+      .channel('drawer-checkin-count')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, fetchCount)
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [])
+
+  const isActive = (href: string) => {
+    if (href === '/(tabs)/') return pathname === '/' || pathname === '/index'
+    return pathname.includes(href.replace('/(tabs)', ''))
+  }
+
+  const getLabel = (item: typeof MENU_ITEMS[number]) => {
+    if (item.href === '/(tabs)/checkin' && checkinCount > 0) {
+      return `Check-in  (${checkinCount})`
+    }
+    return item.label
+  }
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor:   colors.gold,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor:  colors.border,
-        },
-        headerStyle:      { backgroundColor: colors.surface },
-        headerTintColor:  colors.gold,
-        headerTitleStyle: { fontWeight: 'bold' },
-        headerRight:      () => <HeaderLogo />,
-      }}
+    <DrawerContentScrollView
+      {...props}
+      contentContainerStyle={styles.drawerContainer}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          headerTitle: 'Les actualités du BCCO',
-          tabBarLabel: 'Actualités',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="newspaper-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="agenda"
-        options={{
-          headerTitle: "L'agenda du BCCO",
-          tabBarLabel: 'Agenda',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="checkin"
-        options={{
-          headerTitle: 'Se signaler présent au club',
-          tabBarLabel: 'Check-in',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="location-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profil"
-        options={{
-          headerTitle: 'Mon profil',
-          tabBarLabel: 'Profil',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="apropos"
-        options={{
-          headerTitle: 'À propos',
-          tabBarLabel: 'À propos',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="information-circle-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="admin"
-        options={{
-          title: 'Admin',
-          href: isAdmin ? '/admin' : null,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+      {/* En-tête */}
+      <View style={styles.drawerHeader}>
+        <Image
+          source={require('../../assets/images/logo.png')}
+          style={styles.drawerLogo}
+          resizeMode="contain"
+        />
+        <Text style={styles.drawerTitle}>BCCO Ronchin</Text>
+        <Text style={styles.drawerSubtitle}>Billard Club</Text>
+      </View>
+
+      <Divider style={styles.divider} />
+
+      {/* Items principaux */}
+      {MENU_ITEMS.map(item => (
+        <DrawerItem
+          key={item.href}
+          label={getLabel(item)}
+          icon={({ size }) => (
+            <Ionicons
+              name={item.icon as any}
+              size={size}
+              color={isActive(item.href) ? colors.gold : colors.textMuted}
+            />
+          )}
+          onPress={() => {
+            props.navigation.closeDrawer()
+            router.push(item.href as any)
+          }}
+          focused={isActive(item.href)}
+          activeTintColor={colors.gold}
+          inactiveTintColor={colors.textMuted}
+          activeBackgroundColor={colors.surface}
+          labelStyle={styles.itemLabel}
+          style={styles.drawerItem}
+        />
+      ))}
+
+      {/* Admin (conditionnel) */}
+      {(profile?.role === 'admin' || profile?.role === 'rédacteur') && (
+        <>
+          <Divider style={styles.divider} />
+          <DrawerItem
+            label="Admin"
+            icon={({ size }) => (
+              <Ionicons
+                name="settings-outline"
+                size={size}
+                color={isActive('/(tabs)/admin') ? colors.gold : colors.textMuted}
+              />
+            )}
+            onPress={() => {
+              props.navigation.closeDrawer()
+              router.push('/(tabs)/admin' as any)
+            }}
+            focused={isActive('/(tabs)/admin')}
+            activeTintColor={colors.gold}
+            inactiveTintColor={colors.textMuted}
+            activeBackgroundColor={colors.surface}
+            labelStyle={styles.itemLabel}
+            style={styles.drawerItem}
+          />
+        </>
+      )}
+    </DrawerContentScrollView>
   )
 }
+
+export default function DrawerLayout() {
+  return (
+    <Drawer
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{
+        headerStyle:           { backgroundColor: colors.surface },
+        headerTintColor:       colors.gold,
+        headerTitleStyle:      { fontWeight: 'bold' },
+        headerRight:           () => <HeaderLogo />,
+        drawerStyle:           { backgroundColor: colors.background, width: 280 },
+        drawerActiveTintColor: colors.gold,
+        sceneStyle:            { backgroundColor: colors.background },
+      }}
+    >
+      <Drawer.Screen name="index"   options={{ headerTitle: 'Les actualités du BCCO' }} />
+      <Drawer.Screen name="agenda"  options={{ headerTitle: "L'agenda du BCCO" }} />
+      <Drawer.Screen name="checkin"    options={{ headerTitle: 'Se signaler présent au club' }} />
+      <Drawer.Screen name="breakboard" options={{ headerTitle: 'Snooker break board 🎱' }} />
+      <Drawer.Screen name="profil"  options={{ headerTitle: 'Mon profil' }} />
+      <Drawer.Screen name="liens"   options={{ headerTitle: 'Liens utiles' }} />
+      <Drawer.Screen name="apropos" options={{ headerTitle: 'À propos' }} />
+      <Drawer.Screen name="admin"   options={{ headerTitle: 'Admin', drawerItemStyle: { display: 'none' } }} />
+    </Drawer>
+  )
+}
+
+const styles = StyleSheet.create({
+  drawerContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  drawerHeader: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 16,
+    backgroundColor: colors.surface,
+  },
+  drawerLogo: {
+    width: 80,
+    height: 80,
+    marginBottom: 12,
+  },
+  drawerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.gold,
+  },
+  drawerSubtitle: {
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  divider: {
+    backgroundColor: colors.border,
+    marginVertical: 8,
+  },
+  drawerItem: {
+    borderRadius: 8,
+    marginHorizontal: 8,
+  },
+  itemLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+})

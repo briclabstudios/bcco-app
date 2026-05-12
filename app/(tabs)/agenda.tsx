@@ -67,8 +67,19 @@ export default function AgendaScreen() {
   // Calcul des dates marquées pour le calendrier
   const markedDates: Record<string, any> = {}
   events.forEach(event => {
-    const date = event.date_debut.split('T')[0]
-    markedDates[date] = { marked: true, dotColor: colors.gold }
+    const start = event.date_debut.split('T')[0]
+    const end   = event.date_fin ? event.date_fin.split('T')[0] : start
+    const cur  = new Date(start + 'T00:00:00')
+    const endD = new Date(end   + 'T00:00:00')
+    while (cur <= endD) {
+      const d = [
+        cur.getFullYear(),
+        String(cur.getMonth() + 1).padStart(2, '0'),
+        String(cur.getDate()).padStart(2, '0'),
+      ].join('-')
+      markedDates[d] = { marked: true, dotColor: colors.gold }
+      cur.setDate(cur.getDate() + 1)
+    }
   })
   if (selectedDate) {
     markedDates[selectedDate] = {
@@ -79,7 +90,11 @@ export default function AgendaScreen() {
   }
 
   const displayedEvents = selectedDate
-    ? events.filter(e => e.date_debut.startsWith(selectedDate))
+    ? events.filter(e => {
+        const start = e.date_debut.split('T')[0]
+        const end   = e.date_fin ? e.date_fin.split('T')[0] : start
+        return selectedDate >= start && selectedDate <= end
+      })
     : events.filter(e => e.date_debut.startsWith(visibleMonth))
 
   if (loading) {

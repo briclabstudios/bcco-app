@@ -68,7 +68,7 @@ export default function NewEventScreen() {
         image_url,
         auteur_id:   session?.user.id,
       })
-      if (error) Alert.alert('Erreur', "Impossible de créer l'événement.")
+      if (error) Alert.alert('Erreur', error.message ?? "Impossible de créer l'événement.")
       else {
         if (sendNotif && session?.access_token) {
           sendNotification('agenda', titre.trim(), session.access_token)

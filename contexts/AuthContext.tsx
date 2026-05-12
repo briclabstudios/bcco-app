@@ -13,6 +13,7 @@ export type Profile = {
   push_token: string | null
   notif_actus: boolean
   notif_agenda: boolean
+  break_max: number | null
 }
 
 type AuthContextType = {
