@@ -13,8 +13,8 @@ import { supabase } from '../../lib/supabase'
 const MENU_ITEMS = [
   { label: 'Actualités',   icon: 'newspaper-outline',          href: '/(tabs)/'            },
   { label: 'Agenda',       icon: 'calendar-outline',           href: '/(tabs)/agenda'      },
-  { label: 'Check-in',    icon: 'location-outline',           href: '/(tabs)/checkin'     },
   { label: 'Break board',  icon: 'trophy-outline',             href: '/(tabs)/breakboard'  },
+  { label: 'Check-in',    icon: 'location-outline',           href: '/(tabs)/checkin'     },
   { label: 'Liens utiles', icon: 'link-outline',              href: '/(tabs)/liens'       },
   { label: 'Mon profil',   icon: 'person-outline',             href: '/(tabs)/profil'      },
   { label: 'À propos',    icon: 'information-circle-outline', href: '/(tabs)/apropos'     },
