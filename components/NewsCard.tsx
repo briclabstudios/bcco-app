@@ -21,6 +21,7 @@ export type NewsPost = {
 type Props = {
   post: NewsPost
   currentUserId?: string
+  isAdmin?: boolean
   onReact: (reaction: string) => void
 }
 
@@ -56,7 +57,7 @@ export const REACTIONS = [
 const PICKER_WIDTH  = 296
 const SCREEN_WIDTH  = Dimensions.get('window').width
 
-export default function NewsCard({ post, currentUserId, onReact }: Props) {
+export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Props) {
   const router = useRouter()
   const btnRef = useRef<View>(null)
 
@@ -65,7 +66,7 @@ export default function NewsCard({ post, currentUserId, onReact }: Props) {
   const [pickerLeft, setPickerLeft]   = useState(0)
   const [hoveredKey, setHoveredKey]   = useState<string | null>(null)
 
-  const isAuthor    = !!currentUserId && currentUserId === post.auteur_id
+  const isAuthor    = !!currentUserId && (currentUserId === post.auteur_id || !!isAdmin)
   const authorName  = post.author ? `${post.author.prenom} ${post.author.nom}` : 'Auteur inconnu'
   const userReaction = currentUserId
     ? (post.likes.find(l => l.user_id === currentUserId)?.reaction ?? null)

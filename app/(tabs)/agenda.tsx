@@ -138,7 +138,7 @@ export default function AgendaScreen() {
           </Text>
         ) : (
           displayedEvents.map(event => (
-            <EventCard key={event.id} event={event} currentUserId={session?.user.id} />
+            <EventCard key={event.id} event={event} currentUserId={session?.user.id} isAdmin={profile?.role === 'admin'} />
           ))
         )}
 

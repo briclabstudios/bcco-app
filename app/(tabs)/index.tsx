@@ -104,6 +104,7 @@ export default function ActualitesScreen() {
           <NewsCard
             post={item}
             currentUserId={session?.user.id}
+            isAdmin={profile?.role === 'admin'}
             onReact={(reaction) => toggleLike(item.id, reaction)}
           />
         )}

@@ -20,6 +20,7 @@ export type AgendaEvent = {
 type Props = {
   event: AgendaEvent
   currentUserId?: string
+  isAdmin?: boolean
 }
 
 const TYPE_CONFIG = {
@@ -48,10 +49,10 @@ function formatEventDate(debut: string, fin: string | null): string {
   })}`
 }
 
-export default function EventCard({ event, currentUserId }: Props) {
+export default function EventCard({ event, currentUserId, isAdmin }: Props) {
   const router     = useRouter()
   const typeConfig = TYPE_CONFIG[event.type_evenement] ?? TYPE_CONFIG.autre
-  const isAuthor   = !!currentUserId && currentUserId === event.auteur_id
+  const isAuthor   = !!currentUserId && (currentUserId === event.auteur_id || !!isAdmin)
   const authorName = event.author ? `${event.author.prenom} ${event.author.nom}` : 'Auteur inconnu'
 
   return (
