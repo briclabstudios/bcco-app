@@ -1,12 +1,17 @@
-import { Image, StyleSheet } from 'react-native'
+import { TouchableOpacity, Image, StyleSheet } from 'react-native'
+import { useRouter } from 'expo-router'
 
 export default function HeaderLogo() {
+  const router = useRouter()
+
   return (
-    <Image
-      source={require('../assets/images/logo.png')}
-      style={styles.logo}
-      resizeMode="contain"
-    />
+    <TouchableOpacity onPress={() => router.push('/(tabs)/')} activeOpacity={0.7}>
+      <Image
+        source={require('../assets/images/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+    </TouchableOpacity>
   )
 }
 
