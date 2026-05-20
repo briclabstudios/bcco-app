@@ -4,55 +4,28 @@ import { Ionicons } from '@expo/vector-icons'
 import { View, Image, StyleSheet } from 'react-native'
 import { Text, Divider } from 'react-native-paper'
 import { usePathname, useRouter } from 'expo-router'
-import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
 import HeaderLogo from '../../components/HeaderLogo'
-import { supabase } from '../../lib/supabase'
 
 const MENU_ITEMS = [
-  { label: 'Actualités',   icon: 'newspaper-outline',          href: '/(tabs)/'            },
-  { label: 'Agenda',       icon: 'calendar-outline',           href: '/(tabs)/agenda'      },
-  { label: 'Break board',  icon: 'trophy-outline',             href: '/(tabs)/breakboard'  },
-  { label: 'Check-in',    icon: 'location-outline',           href: '/(tabs)/checkin'     },
-  { label: 'Liens utiles', icon: 'link-outline',              href: '/(tabs)/liens'       },
-  { label: 'Mon profil',   icon: 'person-outline',             href: '/(tabs)/profil'      },
-  { label: 'À propos',    icon: 'information-circle-outline', href: '/(tabs)/apropos'     },
+  { label: 'Actualités',          icon: 'newspaper-outline',          href: '/(tabs)/'           },
+  { label: 'Agenda',              icon: 'calendar-outline',           href: '/(tabs)/agenda'     },
+  { label: 'Break board',         icon: 'trophy-outline',             href: '/(tabs)/breakboard' },
+  { label: 'Se signaler présent', icon: 'location-outline',           href: '/(tabs)/checkin'    },
+  { label: 'Liens utiles',        icon: 'link-outline',               href: '/(tabs)/liens'      },
+  { label: 'Mon profil',          icon: 'person-outline',             href: '/(tabs)/profil'     },
+  { label: 'À propos',           icon: 'information-circle-outline', href: '/(tabs)/apropos'    },
 ] as const
 
 function CustomDrawerContent(props: any) {
-  const { profile }  = useAuth()
-  const router       = useRouter()
-  const pathname     = usePathname()
-  const [checkinCount, setCheckinCount] = useState(0)
-
-  useEffect(() => {
-    async function fetchCount() {
-      const { count } = await supabase
-        .from('checkins')
-        .select('*', { count: 'exact', head: true })
-      setCheckinCount(count ?? 0)
-    }
-    fetchCount()
-
-    const channel = supabase
-      .channel('drawer-checkin-count')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, fetchCount)
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [])
+  const { profile } = useAuth()
+  const router      = useRouter()
+  const pathname    = usePathname()
 
   const isActive = (href: string) => {
     if (href === '/(tabs)/') return pathname === '/' || pathname === '/index'
     return pathname.includes(href.replace('/(tabs)', ''))
-  }
-
-  const getLabel = (item: typeof MENU_ITEMS[number]) => {
-    if (item.href === '/(tabs)/checkin' && checkinCount > 0) {
-      return `Check-in  (${checkinCount})`
-    }
-    return item.label
   }
 
   return (
@@ -77,7 +50,7 @@ function CustomDrawerContent(props: any) {
       {MENU_ITEMS.map(item => (
         <DrawerItem
           key={item.href}
-          label={getLabel(item)}
+          label={item.label}
           icon={({ size }) => (
             <Ionicons
               name={item.icon as any}
@@ -142,14 +115,14 @@ export default function DrawerLayout() {
         sceneStyle:            { backgroundColor: colors.background },
       }}
     >
-      <Drawer.Screen name="index"   options={{ headerTitle: 'Les actualités du BCCO' }} />
-      <Drawer.Screen name="agenda"  options={{ headerTitle: "L'agenda du BCCO" }} />
+      <Drawer.Screen name="index"      options={{ headerTitle: 'Les actualités du BCCO' }} />
+      <Drawer.Screen name="agenda"     options={{ headerTitle: "L'agenda du BCCO" }} />
       <Drawer.Screen name="checkin"    options={{ headerTitle: 'Se signaler présent au club' }} />
       <Drawer.Screen name="breakboard" options={{ headerTitle: 'Snooker break board 🎱' }} />
-      <Drawer.Screen name="profil"  options={{ headerTitle: 'Mon profil' }} />
-      <Drawer.Screen name="liens"   options={{ headerTitle: 'Liens utiles' }} />
-      <Drawer.Screen name="apropos" options={{ headerTitle: 'À propos' }} />
-      <Drawer.Screen name="admin"   options={{ headerTitle: 'Admin', drawerItemStyle: { display: 'none' } }} />
+      <Drawer.Screen name="profil"     options={{ headerTitle: 'Mon profil' }} />
+      <Drawer.Screen name="liens"      options={{ headerTitle: 'Liens utiles' }} />
+      <Drawer.Screen name="apropos"    options={{ headerTitle: 'À propos' }} />
+      <Drawer.Screen name="admin"      options={{ headerTitle: 'Admin', drawerItemStyle: { display: 'none' } }} />
     </Drawer>
   )
 }
