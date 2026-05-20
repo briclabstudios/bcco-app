@@ -9,7 +9,7 @@ import { theme, colors } from '../constants/theme'
 import HeaderLogo from '../components/HeaderLogo'
 import { registerForPushNotifications } from '../lib/notifications'
 
-const SPLASH_DURATION = 4000
+const SPLASH_DURATION = 2000
 const FADE_DURATION   = 500
 
 function SplashScreen({ opacity }: { opacity: Animated.Value }) {
