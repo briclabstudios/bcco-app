@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native'
 import { Text, ActivityIndicator } from 'react-native-paper'
-import { useFocusEffect } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
@@ -78,6 +78,7 @@ const CELL_SIZE = Math.floor((SCREEN_WIDTH - LABEL_W - 32 - GAP * 6) / 7)
 
 export default function DisponibilitesScreen() {
   const { session } = useAuth()
+  const router = useRouter()
   const days = getNext7Days()
 
   const [presences, setPresences]     = useState<Presence[]>([])
@@ -155,6 +156,7 @@ export default function DisponibilitesScreen() {
     <View style={styles.container}>
       <ScrollView>
         <Text style={styles.intro}>
+          Vous cherchez un partenaire ? Consultez en un coup d'œil les membres ayant planifié leur passage au club les prochains jours, et renseignez vos présences.{'\n\n'}
           Appuyez sur un créneau pour vous signaler disponible. Appuyez à nouveau pour annuler.
         </Text>
 
@@ -203,8 +205,13 @@ export default function DisponibilitesScreen() {
                       isSelected && !mePresent && styles.cellSelected,
                     ]}
                     onPress={() => {
-                      if (!past && session) togglePresence(jour, creneau)
-                      else setSelectedCell(isSelected ? null : { jour, creneau })
+                      if (!past && !session) {
+                        router.push('/login')
+                      } else if (!past && session) {
+                        togglePresence(jour, creneau)
+                      } else {
+                        setSelectedCell(isSelected ? null : { jour, creneau })
+                      }
                     }}
                     disabled={isToggling}
                     activeOpacity={0.7}

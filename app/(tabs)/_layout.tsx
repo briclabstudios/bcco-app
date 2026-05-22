@@ -12,7 +12,7 @@ const MENU_ITEMS = [
   { label: 'Actualités',          icon: 'newspaper-outline',          href: '/(tabs)/'           },
   { label: 'Agenda',              icon: 'calendar-outline',           href: '/(tabs)/agenda'     },
   { label: 'Break board',         icon: 'trophy-outline',             href: '/(tabs)/breakboard' },
-  { label: 'Se signaler présent', icon: 'location-outline',           href: '/(tabs)/checkin'    },
+  { label: 'Mes présences',        icon: 'location-outline',           href: '/(tabs)/checkin'    },
   { label: 'Liens utiles',        icon: 'link-outline',               href: '/(tabs)/liens'      },
   { label: 'Mon profil',          icon: 'person-outline',             href: '/(tabs)/profil'     },
   { label: 'À propos',           icon: 'information-circle-outline', href: '/(tabs)/apropos'    },
@@ -117,7 +117,7 @@ export default function DrawerLayout() {
     >
       <Drawer.Screen name="index"      options={{ headerTitle: 'Les actualités du BCCO' }} />
       <Drawer.Screen name="agenda"     options={{ headerTitle: "L'agenda du BCCO" }} />
-      <Drawer.Screen name="checkin"    options={{ headerTitle: 'Se signaler présent au club' }} />
+      <Drawer.Screen name="checkin"    options={{ headerTitle: 'Mes présences au club' }} />
       <Drawer.Screen name="breakboard" options={{ headerTitle: 'Snooker break board 🎱' }} />
       <Drawer.Screen name="profil"     options={{ headerTitle: 'Mon profil' }} />
       <Drawer.Screen name="liens"      options={{ headerTitle: 'Liens utiles' }} />
