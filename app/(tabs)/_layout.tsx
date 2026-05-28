@@ -47,7 +47,12 @@ function CustomDrawerContent(props: any) {
       <Divider style={styles.divider} />
 
       {/* Items principaux */}
-      {MENU_ITEMS.map(item => (
+      {MENU_ITEMS.filter(item => {
+        if (item.href === '/(tabs)/breakboard') {
+          return profile?.disciplines?.includes('snooker')
+        }
+        return true
+      }).map(item => (
         <DrawerItem
           key={item.href}
           label={item.label}

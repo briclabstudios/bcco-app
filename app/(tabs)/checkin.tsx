@@ -77,7 +77,7 @@ const GAP     = 4
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - LABEL_W - 32 - GAP * 6) / 7)
 
 export default function DisponibilitesScreen() {
-  const { session } = useAuth()
+  const { session, profile } = useAuth()
   const router = useRouter()
   const days = getNext7Days()
 
@@ -107,12 +107,23 @@ export default function DisponibilitesScreen() {
     const userIds = [...new Set(rawData.map((p: any) => p.user_id))]
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, prenom, nom')
+      .select('id, prenom, nom, disciplines')
       .in('id', userIds)
 
     const profileMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, p]))
 
-    setPresences(rawData.map((p: any) => ({
+    // Filtrage par discipline : ne montrer que les membres partageant
+    // au moins une discipline avec l'utilisateur connecté.
+    // Si non connecté ou disciplines vides, on affiche tout.
+    const myDisciplines: string[] = profile?.disciplines ?? []
+    const filtered = myDisciplines.length === 0
+      ? rawData
+      : rawData.filter((p: any) => {
+          const memberDisciplines: string[] = profileMap[p.user_id]?.disciplines ?? []
+          return memberDisciplines.some(d => myDisciplines.includes(d))
+        })
+
+    setPresences(filtered.map((p: any) => ({
       ...p,
       profile: profileMap[p.user_id] ?? null,
     })))

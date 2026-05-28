@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
-import { View, StyleSheet, FlatList, Linking, TouchableOpacity, Alert } from 'react-native'
+import { useState, useCallback } from 'react'
+import { View, StyleSheet, Linking, TouchableOpacity, Alert } from 'react-native'
 import { Text, Button, TextInput, ActivityIndicator, Modal, Portal, IconButton } from 'react-native-paper'
 import { useFocusEffect } from 'expo-router'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist'
+import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
@@ -12,28 +15,36 @@ type Lien = {
   url: string
   created_at: string
   created_by: string
+  ordre: number
 }
 
 export default function LiensScreen() {
   const { session, profile } = useAuth()
-  const [liens, setLiens]       = useState<Lien[]>([])
-  const [loading, setLoading]   = useState(true)
+  const [liens, setLiens]               = useState<Lien[]>([])
+  const [loading, setLoading]           = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
   const [description, setDescription]   = useState('')
   const [url, setUrl]                   = useState('')
   const [saving, setSaving]             = useState(false)
+  const [reorderMode, setReorderMode]   = useState(false)
+
+  const isAdmin = profile?.role === 'admin'
+  const canAdd  = profile?.role === 'admin' || profile?.role === 'rédacteur'
 
   async function fetchLiens() {
     setLoading(true)
     const { data } = await supabase
       .from('ressource')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('ordre', { ascending: true })
     setLiens(data ?? [])
     setLoading(false)
   }
 
-  useFocusEffect(useCallback(() => { fetchLiens() }, []))
+  useFocusEffect(useCallback(() => {
+    setReorderMode(false)
+    fetchLiens()
+  }, []))
 
   function openModal() {
     setDescription('')
@@ -50,14 +61,13 @@ export default function LiensScreen() {
       Alert.alert('Erreur', "L'URL est obligatoire.")
       return
     }
-    // Ajout automatique du protocole si manquant
     const finalUrl = url.startsWith('http') ? url.trim() : `https://${url.trim()}`
-
     setSaving(true)
     const { error } = await supabase.from('ressource').insert({
       description: description.trim(),
       url: finalUrl,
       created_by: session?.user.id,
+      ordre: liens.length,
     })
     setSaving(false)
     if (error) {
@@ -86,6 +96,15 @@ export default function LiensScreen() {
     )
   }
 
+  async function handleDragEnd({ data }: { data: Lien[] }) {
+    setLiens(data)
+    await Promise.all(
+      data.map((item, index) =>
+        supabase.from('ressource').update({ ordre: index }).eq('id', item.id)
+      )
+    )
+  }
+
   function openUrl(url: string) {
     Linking.openURL(url).catch(() =>
       Alert.alert('Erreur', "Impossible d'ouvrir ce lien.")
@@ -94,6 +113,48 @@ export default function LiensScreen() {
 
   const canDelete = (lien: Lien) =>
     profile?.role === 'admin' || lien.created_by === session?.user.id
+
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<Lien>) => (
+    <ScaleDecorator>
+      <TouchableOpacity
+        style={[styles.card, isActive && styles.cardDragging]}
+        onPress={() => !reorderMode && openUrl(item.url)}
+        activeOpacity={reorderMode ? 1 : 0.7}
+      >
+        <View style={styles.cardContent}>
+          {reorderMode ? (
+            <TouchableOpacity onPressIn={drag} style={styles.dragHandle} hitSlop={8}>
+              <Ionicons name="reorder-three-outline" size={24} color={colors.textMuted} />
+            </TouchableOpacity>
+          ) : null}
+          <View style={styles.cardTexts}>
+            <Text style={styles.cardDescription}>{item.description}</Text>
+            {!reorderMode && (
+              <Text style={styles.cardUrl} numberOfLines={1}>{item.url}</Text>
+            )}
+          </View>
+          {!reorderMode && (
+            <View style={styles.cardActions}>
+              <IconButton
+                icon="open-in-new"
+                iconColor={colors.gold}
+                size={20}
+                onPress={() => openUrl(item.url)}
+              />
+              {canDelete(item) && (
+                <IconButton
+                  icon="trash-can-outline"
+                  iconColor={colors.error}
+                  size={20}
+                  onPress={() => handleDelete(item.id)}
+                />
+              )}
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    </ScaleDecorator>
+  )
 
   if (loading) {
     return (
@@ -104,55 +165,47 @@ export default function LiensScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      {(profile?.role === 'admin' || profile?.role === 'rédacteur') && (
-        <Button
-          mode="contained"
-          onPress={openModal}
-          buttonColor={colors.gold}
-          labelStyle={{ color: colors.background, fontWeight: 'bold' }}
-          icon="plus"
-          style={styles.addButton}
-        >
-          Ajouter une ressource
-        </Button>
-      )}
+    <GestureHandlerRootView style={styles.container}>
+      {/* Barre d'actions */}
+      <View style={styles.toolbar}>
+        {canAdd && !reorderMode && (
+          <Button
+            mode="contained"
+            onPress={openModal}
+            buttonColor={colors.gold}
+            labelStyle={{ color: colors.background, fontWeight: 'bold' }}
+            icon="plus"
+            style={styles.actionButton}
+          >
+            Ajouter une ressource
+          </Button>
+        )}
+        {isAdmin && liens.length > 1 && (
+          <Button
+            mode={reorderMode ? 'contained' : 'outlined'}
+            onPress={() => setReorderMode(v => !v)}
+            buttonColor={reorderMode ? colors.gold : undefined}
+            textColor={reorderMode ? colors.background : colors.gold}
+            labelStyle={{ fontWeight: 'bold' }}
+            icon={reorderMode ? 'check' : 'drag-horizontal-variant'}
+            style={styles.actionButton}
+          >
+            {reorderMode ? 'Terminé' : 'Réorganiser'}
+          </Button>
+        )}
+      </View>
 
       {liens.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>Aucun lien pour l'instant.</Text>
         </View>
       ) : (
-        <FlatList
+        <DraggableFlatList
           data={liens}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} onPress={() => openUrl(item.url)} activeOpacity={0.7}>
-              <View style={styles.cardContent}>
-                <View style={styles.cardTexts}>
-                  <Text style={styles.cardDescription}>{item.description}</Text>
-                  <Text style={styles.cardUrl} numberOfLines={1}>{item.url}</Text>
-                </View>
-                <View style={styles.cardActions}>
-                  <IconButton
-                    icon="open-in-new"
-                    iconColor={colors.gold}
-                    size={20}
-                    onPress={() => openUrl(item.url)}
-                  />
-                  {canDelete(item) && (
-                    <IconButton
-                      icon="trash-can-outline"
-                      iconColor={colors.error}
-                      size={20}
-                      onPress={() => handleDelete(item.id)}
-                    />
-                  )}
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
+          onDragEnd={handleDragEnd}
+          renderItem={renderItem}
         />
       )}
 
@@ -215,28 +268,38 @@ export default function LiensScreen() {
           </Button>
         </Modal>
       </Portal>
-    </View>
+    </GestureHandlerRootView>
   )
 }
 
 const styles = StyleSheet.create({
-  container:  { flex: 1, backgroundColor: colors.background },
-  center:     { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  addButton:  { margin: 16, borderRadius: 8 },
-  list:       { paddingHorizontal: 16, paddingBottom: 24, gap: 12 },
-  empty:      { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText:  { color: colors.textMuted, fontSize: 15 },
+  container:   { flex: 1, backgroundColor: colors.background },
+  center:      { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  toolbar:     { paddingHorizontal: 16, paddingTop: 16, gap: 8 },
+  actionButton: { borderRadius: 8 },
+  list:        { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 12 },
+  empty:       { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyText:   { color: colors.textMuted, fontSize: 15 },
   card: {
     backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  cardContent:  { flexDirection: 'row', alignItems: 'center', padding: 12 },
-  cardTexts:    { flex: 1 },
+  cardDragging: {
+    borderColor: colors.gold,
+    borderWidth: 2,
+    shadowColor: colors.gold,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  cardContent:     { flexDirection: 'row', alignItems: 'center', padding: 12 },
+  dragHandle:      { paddingRight: 10, paddingLeft: 2 },
+  cardTexts:       { flex: 1 },
   cardDescription: { fontSize: 15, color: colors.text, fontWeight: '600', marginBottom: 2 },
-  cardUrl:      { fontSize: 12, color: colors.textMuted },
-  cardActions:  { flexDirection: 'row', alignItems: 'center' },
+  cardUrl:         { fontSize: 12, color: colors.textMuted },
+  cardActions:     { flexDirection: 'row', alignItems: 'center' },
   modal: {
     backgroundColor: colors.surface,
     margin: 24,
@@ -246,5 +309,4 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 18, fontWeight: 'bold', color: colors.gold, marginBottom: 8 },
   input:      { backgroundColor: colors.surface },
-  error:      { color: colors.error },
 })

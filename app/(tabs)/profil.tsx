@@ -196,7 +196,7 @@ export default function ProfilScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionLabel}>Mes records</Text>
           <TextInput
-            label="Break maximum"
+            label="Série / Break maximum"
             value={breakMax}
             onChangeText={setBreakMax}
             mode="outlined"
