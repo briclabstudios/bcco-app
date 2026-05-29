@@ -40,6 +40,12 @@ function formatDateFr(dateStr: string) {
   return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
+function formatMonthFr(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-').map(Number)
+  const d = new Date(year, month - 1, 1)
+  return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+}
+
 export default function AgendaScreen() {
   const { profile, session } = useAuth()
   const router = useRouter()
@@ -123,11 +129,11 @@ export default function AgendaScreen() {
 
         <View style={styles.listHeader}>
           <Text style={styles.listTitle}>
-            {selectedDate ? formatDateFr(selectedDate) : 'Événements du mois en cours'}
+            {selectedDate ? formatDateFr(selectedDate) : `Événements de ${formatMonthFr(visibleMonth)}`}
           </Text>
           {selectedDate && (
             <Text style={styles.clearFilter} onPress={() => setSelectedDate(null)}>
-              Voir tous les événements du mois en cours
+              Voir tous les événements de {formatMonthFr(visibleMonth)}
             </Text>
           )}
         </View>
