@@ -283,7 +283,7 @@ export default function ProfilScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Mes records</Text>
         <InfoRow
-          label="Break maximum"
+          label="Série / Break maximum"
           value={profile?.break_max != null ? String(profile.break_max) : '—'}
         />
       </View>
