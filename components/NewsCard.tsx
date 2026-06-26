@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { View, StyleSheet, Image, TouchableOpacity, Modal, Dimensions } from 'react-native'
+import { View, StyleSheet, Image, TouchableOpacity, Modal, Dimensions, Pressable } from 'react-native'
 import { Text, Card, IconButton } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -65,6 +65,8 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
   const [pickerTop, setPickerTop]     = useState(0)
   const [pickerLeft, setPickerLeft]   = useState(0)
   const [hoveredKey, setHoveredKey]   = useState<string | null>(null)
+  const [descExpanded, setDescExpanded] = useState(false)
+  const [descOverflow, setDescOverflow] = useState(false)
 
   const isAuthor    = !!currentUserId && (currentUserId === post.auteur_id || !!isAdmin)
   const authorName  = post.author ? `${post.author.prenom} ${post.author.nom}` : 'Auteur inconnu'
@@ -122,7 +124,34 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
 
       <Card.Content style={styles.content}>
         <Text style={styles.titre}>{post.titre}</Text>
-        <Text style={styles.description} numberOfLines={3}>{post.description}</Text>
+        <Pressable
+          onPress={() => descOverflow && setDescExpanded(v => !v)}
+          disabled={!descOverflow}
+        >
+          <Text
+            style={styles.description}
+            numberOfLines={descExpanded ? undefined : 3}
+          >
+            {post.description}
+          </Text>
+          {/* Mesure invisible du texte complet pour détecter le dépassement */}
+          {!descOverflow && (
+            <Text
+              style={[styles.description, styles.measureHidden]}
+              onTextLayout={e => {
+                if (e.nativeEvent.lines.length > 3) setDescOverflow(true)
+              }}
+              accessible={false}
+            >
+              {post.description}
+            </Text>
+          )}
+          {descOverflow && (
+            <Text style={styles.expandHint}>
+              {descExpanded ? 'Voir moins' : 'Voir plus'}
+            </Text>
+          )}
+        </Pressable>
       </Card.Content>
 
       {post.image_url ? (
@@ -241,6 +270,21 @@ const styles = StyleSheet.create({
   content: { paddingTop: 8, gap: 6 },
   titre:   { fontSize: 16, fontWeight: 'bold', color: colors.text },
   description: { fontSize: 14, color: colors.textMuted, lineHeight: 20 },
+  measureHidden: {
+    position: 'absolute',
+    opacity: 0,
+    left: 0,
+    right: 0,
+    top: 0,
+    height: 0,
+    overflow: 'hidden',
+  },
+  expandHint: {
+    fontSize: 12,
+    color: colors.gold,
+    fontWeight: '600',
+    marginTop: 4,
+  },
   image: { width: '100%', height: 200, marginTop: 10 },
   reactionCounts: {
     flexDirection: 'row',

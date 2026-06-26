@@ -1,4 +1,5 @@
-import { View, StyleSheet, Image } from 'react-native'
+import { useState } from 'react'
+import { View, StyleSheet, Image, Pressable } from 'react-native'
 import { Text, Card, IconButton } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { colors } from '../constants/theme'
@@ -55,6 +56,9 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
   const isAuthor   = !!currentUserId && (currentUserId === event.auteur_id || !!isAdmin)
   const authorName = event.author ? `${event.author.prenom} ${event.author.nom}` : 'Auteur inconnu'
 
+  const [descExpanded, setDescExpanded] = useState(false)
+  const [descOverflow, setDescOverflow] = useState(false)
+
   return (
     <Card style={styles.card}>
 
@@ -76,7 +80,34 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
         </View>
         <Text style={styles.date}>{formatEventDate(event.date_debut, event.date_fin)}</Text>
         {event.description ? (
-          <Text style={styles.description} numberOfLines={2}>{event.description}</Text>
+          <Pressable
+            onPress={() => descOverflow && setDescExpanded(v => !v)}
+            disabled={!descOverflow}
+          >
+            <Text
+              style={styles.description}
+              numberOfLines={descExpanded ? undefined : 2}
+            >
+              {event.description}
+            </Text>
+            {/* Mesure invisible du texte complet pour détecter le dépassement */}
+            {!descOverflow && (
+              <Text
+                style={[styles.description, styles.measureHidden]}
+                onTextLayout={e => {
+                  if (e.nativeEvent.lines.length > 2) setDescOverflow(true)
+                }}
+                accessible={false}
+              >
+                {event.description}
+              </Text>
+            )}
+            {descOverflow && (
+              <Text style={styles.expandHint}>
+                {descExpanded ? 'Voir moins' : 'Voir plus'}
+              </Text>
+            )}
+          </Pressable>
         ) : null}
       </Card.Content>
 
@@ -137,6 +168,21 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   description: { fontSize: 14, color: colors.textMuted, lineHeight: 20 },
+  measureHidden: {
+    position: 'absolute',
+    opacity: 0,
+    left: 0,
+    right: 0,
+    top: 0,
+    height: 0,
+    overflow: 'hidden',
+  },
+  expandHint: {
+    fontSize: 12,
+    color: colors.gold,
+    fontWeight: '600',
+    marginTop: 4,
+  },
   image: { width: '100%', height: 200, marginTop: 10 },
   footer: {
     flexDirection: 'row',
