@@ -1,5 +1,10 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { View, StyleSheet, Image, TouchableOpacity, Modal, Dimensions, Pressable } from 'react-native'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated'
 import { Text, Card, IconButton } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -67,6 +72,41 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
   const [hoveredKey, setHoveredKey]   = useState<string | null>(null)
   const [descExpanded, setDescExpanded] = useState(false)
   const [descOverflow, setDescOverflow] = useState(false)
+  const [imageExpanded, setImageExpanded] = useState(false)
+  const [imageRatio, setImageRatio] = useState<number | null>(null)
+  const [imageContainerW, setImageContainerW] = useState(0)
+
+  useEffect(() => {
+    if (!post.image_url) return
+    Image.getSize(
+      post.image_url,
+      (w, h) => { if (w && h) setImageRatio(w / h) },
+      () => {},
+    )
+  }, [post.image_url])
+
+  const imageHeight = useSharedValue(200)
+
+  useEffect(() => {
+    const target =
+      imageExpanded && imageRatio && imageContainerW
+        ? imageContainerW / imageRatio
+        : 200
+    imageHeight.value = withTiming(target, { duration: 280 })
+  }, [imageExpanded, imageRatio, imageContainerW])
+
+  const animatedImageStyle = useAnimatedStyle(() => ({
+    height: imageHeight.value,
+  }))
+
+  // Hauteur affichée en mode "cropé"
+  const COLLAPSED_IMAGE_HEIGHT = 200
+  // L'image est considérée comme cropée si son ratio naturel diffère du ratio affiché
+  const naturalDisplayedHeight = imageRatio && imageContainerW
+    ? imageContainerW / imageRatio
+    : 0
+  const imageIsCropped =
+    naturalDisplayedHeight > COLLAPSED_IMAGE_HEIGHT + 1
 
   const isAuthor    = !!currentUserId && (currentUserId === post.auteur_id || !!isAdmin)
   const authorName  = post.author ? `${post.author.prenom} ${post.author.nom}` : 'Auteur inconnu'
@@ -155,7 +195,29 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
       </Card.Content>
 
       {post.image_url ? (
-        <Image source={{ uri: post.image_url }} style={styles.image} resizeMode="cover" />
+        <Pressable
+          onPress={() => imageIsCropped && setImageExpanded(v => !v)}
+          disabled={!imageIsCropped}
+          onLayout={e => setImageContainerW(e.nativeEvent.layout.width)}
+        >
+          <Animated.Image
+            source={{ uri: post.image_url }}
+            style={[styles.image, animatedImageStyle]}
+            resizeMode="cover"
+            onLoad={e => {
+              if (imageRatio) return
+              const src = (e.nativeEvent as any)?.source
+              if (src?.width && src?.height) setImageRatio(src.width / src.height)
+            }}
+          />
+          {imageIsCropped && (
+            <View style={styles.imageHintWrap} pointerEvents="none">
+              <Text style={styles.imageHint}>
+                {imageExpanded ? 'Réduire' : 'Voir en entier'}
+              </Text>
+            </View>
+          )}
+        </Pressable>
       ) : null}
 
       {reactionCounts.length > 0 && (
@@ -286,6 +348,20 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   image: { width: '100%', height: 200, marginTop: 10 },
+  imageHintWrap: {
+    position: 'absolute',
+    right: 8,
+    bottom: 8,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  imageHint: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '600',
+  },
   reactionCounts: {
     flexDirection: 'row',
     flexWrap: 'wrap',
