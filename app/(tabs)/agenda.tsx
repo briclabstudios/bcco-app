@@ -101,7 +101,10 @@ export default function AgendaScreen() {
         const end   = e.date_fin ? e.date_fin.split('T')[0] : start
         return selectedDate >= start && selectedDate <= end
       })
-    : events.filter(e => e.date_debut.startsWith(visibleMonth))
+    : events
+        .filter(e => e.date_debut.startsWith(visibleMonth))
+        .slice()
+        .sort((a, b) => b.date_debut.localeCompare(a.date_debut))
 
   if (loading) {
     return (
