@@ -4,6 +4,14 @@
     <meta charset="utf-8" />
     <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="L'appli des membres du Billard Club du Canon d'Or" />
+    <meta name="theme-color" content="#C9A84C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="BCCO" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <title>BCCO Ronchin</title>
     <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
@@ -32,6 +40,20 @@
     </noscript>
     <!-- The root element for your Expo app. -->
     <div id="root"></div>
-  <script src="/bcco-app/_expo/static/js/web/entry-c860dddfdca72d3add05838bd1998bbf.js" defer></script>
+
+    <script>
+      // Enregistrement du service worker (PWA) : HTTPS ou localhost uniquement.
+      if (
+        'serviceWorker' in navigator &&
+        (location.protocol === 'https:' ||
+          location.hostname === 'localhost' ||
+          location.hostname === '127.0.0.1')
+      ) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('./sw.js').catch(function () {})
+        })
+      }
+    </script>
+  <script src="/bcco-app/_expo/static/js/web/entry-886ad97acb8f74ea7e55d2f943a79251.js" defer></script>
 </body>
 </html>
