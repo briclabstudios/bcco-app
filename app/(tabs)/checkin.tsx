@@ -168,7 +168,7 @@ export default function DisponibilitesScreen() {
       <ScrollView>
         <Text style={styles.intro}>
           Vous cherchez un partenaire ? Consultez en un coup d'œil les membres ayant planifié leur passage au club les prochains jours, et renseignez vos présences.{'\n\n'}
-          Appuyez sur un créneau pour vous signaler disponible. Appuyez à nouveau pour annuler.
+          Appuyez sur un créneau pour vous signaler présent et voir les autres membres présents sur ce créneau. Appuyez à nouveau pour supprimer votre présence.
         </Text>
 
         {/* Grille */}

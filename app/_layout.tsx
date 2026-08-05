@@ -75,6 +75,28 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="login" options={{ presentation: 'modal' }} />
           <Stack.Screen
+            name="forgot-password"
+            options={{
+              presentation: 'modal',
+              headerShown: true,
+              title: 'Mot de passe oublié',
+              headerStyle: { backgroundColor: colors.surface },
+              headerTintColor: colors.gold,
+              headerRight: () => <HeaderLogo />,
+            }}
+          />
+          <Stack.Screen
+            name="reset-password"
+            options={{
+              presentation: 'modal',
+              headerShown: true,
+              title: 'Nouveau mot de passe',
+              headerStyle: { backgroundColor: colors.surface },
+              headerTintColor: colors.gold,
+              headerRight: () => <HeaderLogo />,
+            }}
+          />
+          <Stack.Screen
             name="news/new"
             options={{
               presentation: 'modal',

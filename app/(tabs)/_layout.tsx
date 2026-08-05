@@ -41,7 +41,7 @@ function CustomDrawerContent(props: any) {
           resizeMode="contain"
         />
         <Text style={styles.drawerTitle}>BCCO Ronchin</Text>
-        <Text style={styles.drawerSubtitle}>Billard Club</Text>
+        <Text style={styles.drawerSubtitle}>L’appli des membres du Billard Club du Canon d’Or</Text>
       </View>
 
       <Divider style={styles.divider} />
@@ -157,6 +157,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textMuted,
     marginTop: 2,
+    textAlign: 'center',
   },
   divider: {
     backgroundColor: colors.border,
