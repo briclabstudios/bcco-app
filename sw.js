@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bcco-app-v1'
+const CACHE_NAME = 'bcco-app-v2'
 const SHELL = './index.html'
 
 self.addEventListener('install', (event) => {
@@ -24,6 +24,10 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   if (request.method !== 'GET') return
 
+  // Laisser passer les requêtes vers d'autres origines (API Supabase, images externes…)
+  // sans les mettre en cache : les données API doivent toujours être fraîches.
+  if (new URL(request.url).origin !== self.location.origin) return
+
   // Navigations : réseau d'abord, puis coquille en cache hors ligne.
   if (request.mode === 'navigate') {
     event.respondWith(
@@ -34,7 +38,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Autres GET : cache d'abord, réseau en secours et mise en cache.
+  // Assets statiques : cache d'abord, réseau en secours et mise en cache.
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request)
