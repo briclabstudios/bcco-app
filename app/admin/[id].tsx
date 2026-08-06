@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { View, StyleSheet, ScrollView, Alert } from 'react-native'
+import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native'
 import { Text, Button, Avatar, ActivityIndicator, RadioButton, Checkbox } from 'react-native-paper'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { colors } from '../../constants/theme'
+import { confirmAction } from '../../lib/confirm'
 import { Profile } from '../../contexts/AuthContext'
 
 const ROLES = ['membre', 'rédacteur', 'admin']
@@ -60,30 +61,30 @@ export default function MemberDetailScreen() {
     : false
 
   function handleDelete() {
-    Alert.alert(
+    confirmAction(
       'Supprimer le membre',
       `Supprimer définitivement ${member?.prenom} ${member?.nom} ? Cette action est irréversible.`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true)
-            const { data: { session } } = await supabase.auth.getSession()
-            const { error } = await supabase.functions.invoke('delete-member', {
-              body: { userId: id },
-              headers: { Authorization: `Bearer ${session?.access_token}` },
-            })
-            if (error) {
-              Alert.alert('Erreur', 'Impossible de supprimer ce membre.')
-              setDeleting(false)
-            } else {
-              router.back()
-            }
-          },
-        },
-      ]
+      async () => {
+        setDeleting(true)
+        const { data: { session } } = await supabase.auth.getSession()
+        const { error } = await supabase.functions.invoke('delete-member', {
+          body: { userId: id },
+          headers: { Authorization: `Bearer ${session?.access_token}` },
+        })
+        if (error) {
+          const detail = (error as any)?.context?.data?.error ?? error.message
+          Alert.alert('Erreur', `Impossible de supprimer ce membre : ${detail}`)
+          setDeleting(false)
+        } else {
+          if (Platform.OS === 'web') {
+            const base = __DEV__ ? '' : '/bcco-app'
+            window.location.assign(`${base}/admin`)
+          } else {
+            router.back()
+          }
+        }
+      },
+      'Supprimer',
     )
   }
 

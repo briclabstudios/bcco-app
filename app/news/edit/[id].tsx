@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { View, StyleSheet, ScrollView, Alert } from 'react-native'
+import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native'
 import { Text, TextInput, Button, Checkbox, ActivityIndicator, Switch } from 'react-native-paper'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { uploadPostImage } from '../../../lib/uploadImage'
 import { useAuth } from '../../../contexts/AuthContext'
 import { colors } from '../../../constants/theme'
+import { confirmAction } from '../../../lib/confirm'
 import ImagePickerField from '../../../components/ImagePickerField'
 
 const TAGS = ['Tournoi', 'Annonce', 'Résultat', 'Événement', 'Snooker', 'Carambole']
@@ -75,26 +76,23 @@ export default function EditNewsScreen() {
   }
 
   function handleDelete() {
-    Alert.alert(
+    confirmAction(
       'Supprimer la publication',
       'Cette action est irréversible. Confirmer la suppression ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true)
-            const { error } = await supabase.from('news_posts').delete().eq('id', id)
-            if (error) {
-              Alert.alert('Erreur', "Impossible de supprimer la publication.")
-              setDeleting(false)
-            } else {
-              router.back()
-            }
-          },
-        },
-      ]
+      async () => {
+        setDeleting(true)
+        const { error } = await supabase.from('news_posts').delete().eq('id', id)
+        if (error) {
+          Alert.alert('Erreur', "Impossible de supprimer la publication.")
+          setDeleting(false)
+        } else if (Platform.OS === 'web') {
+          const base = __DEV__ ? '' : '/bcco-app'
+          window.location.assign(`${base}/`)
+        } else {
+          router.back()
+        }
+      },
+      'Supprimer',
     )
   }
 

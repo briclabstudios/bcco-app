@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
+import { confirmAction } from '../../lib/confirm'
 
 type Lien = {
   id: string
@@ -78,21 +79,19 @@ export default function LiensScreen() {
     }
   }
 
-  async function handleDelete(id: string) {
-    Alert.alert(
+  function handleDelete(id: string) {
+    confirmAction(
       'Supprimer',
       'Supprimer ce lien ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            await supabase.from('ressource').delete().eq('id', id)
-            fetchLiens()
-          },
-        },
-      ]
+      async () => {
+        const { error } = await supabase.from('ressource').delete().eq('id', id)
+        if (error) {
+          Alert.alert('Erreur', "Impossible de supprimer ce lien.")
+        } else {
+          fetchLiens()
+        }
+      },
+      'Supprimer',
     )
   }
 
@@ -197,7 +196,7 @@ export default function LiensScreen() {
 
       {liens.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>Aucun lien pour l'instant.</Text>
+          <Text style={styles.emptyText}>Aucun lien pour l&apos;instant.</Text>
         </View>
       ) : (
         <DraggableFlatList

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity } from 'react-native'
 import { Text, TextInput, Button, ActivityIndicator } from 'react-native-paper'
 import { Calendar } from 'react-native-calendars'
 import { useRouter, useLocalSearchParams } from 'expo-router'
@@ -8,6 +8,7 @@ import { supabase } from '../../../lib/supabase'
 import { uploadPostImage } from '../../../lib/uploadImage'
 import { useAuth } from '../../../contexts/AuthContext'
 import { colors } from '../../../constants/theme'
+import { confirmAction } from '../../../lib/confirm'
 import ImagePickerField from '../../../components/ImagePickerField'
 
 type EventType = 'tournoi' | 'événement' | 'autre'
@@ -103,26 +104,23 @@ export default function EditEventScreen() {
   }
 
   function handleDelete() {
-    Alert.alert(
+    confirmAction(
       "Supprimer l'événement",
       'Cette action est irréversible. Confirmer la suppression ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true)
-            const { error } = await supabase.from('agenda_events').delete().eq('id', id)
-            if (error) {
-              Alert.alert('Erreur', "Impossible de supprimer l'événement.")
-              setDeleting(false)
-            } else {
-              router.back()
-            }
-          },
-        },
-      ]
+      async () => {
+        setDeleting(true)
+        const { error } = await supabase.from('agenda_events').delete().eq('id', id)
+        if (error) {
+          Alert.alert('Erreur', "Impossible de supprimer l'événement.")
+          setDeleting(false)
+        } else if (Platform.OS === 'web') {
+          const base = __DEV__ ? '' : '/bcco-app'
+          window.location.assign(`${base}/agenda`)
+        } else {
+          router.back()
+        }
+      },
+      'Supprimer',
     )
   }
 
@@ -272,7 +270,7 @@ export default function EditEventScreen() {
         textColor={colors.error}
         icon="trash-can-outline"
       >
-        Supprimer l'événement
+        Supprimer l&apos;événement
       </Button>
 
     </ScrollView>
