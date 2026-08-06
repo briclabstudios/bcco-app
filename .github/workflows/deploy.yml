@@ -35,6 +35,9 @@ jobs:
       - name: Disable Jekyll (allow _expo folder)
         run: touch dist/.nojekyll
 
+      - name: Add build marker (force new deployment each push)
+        run: echo "${{ github.sha }}" > dist/build-version.txt
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
