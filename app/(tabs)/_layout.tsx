@@ -15,7 +15,6 @@ const MENU_ITEMS = [
   { label: 'Mes présences',        icon: 'location-outline',           href: '/(tabs)/checkin'    },
   { label: 'Liens utiles',        icon: 'link-outline',               href: '/(tabs)/liens'      },
   { label: 'Mon profil',          icon: 'person-outline',             href: '/(tabs)/profil'     },
-  { label: 'À propos',           icon: 'information-circle-outline', href: '/(tabs)/apropos'    },
 ] as const
 
 function CustomDrawerContent(props: any) {
