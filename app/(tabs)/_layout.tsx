@@ -50,7 +50,7 @@ function CustomDrawerContent(props: any) {
       {/* Items principaux */}
       {MENU_ITEMS.filter(item => {
         if (item.href === '/(tabs)/breakboard') {
-          return profile?.disciplines?.includes('snooker')
+          return !profile || profile.disciplines.includes('snooker')
         }
         return true
       }).map(item => (

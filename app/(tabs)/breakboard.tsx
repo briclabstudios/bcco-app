@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { View, StyleSheet, FlatList, Alert } from 'react-native'
 import { Text, ActivityIndicator, IconButton, TextInput, Button } from 'react-native-paper'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
@@ -17,17 +17,7 @@ const MEDAL: Record<number, string> = { 0: '🥇', 1: '🥈', 2: '🥉' }
 
 export default function BreakBoardScreen() {
   const { session, profile } = useAuth()
-  const router = useRouter()
 
-  // Accès réservé aux membres snooker
-  if (profile !== undefined && !profile?.disciplines?.includes('snooker')) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.emptyEmoji}>🎱</Text>
-        <Text style={styles.emptyText}>Cette section est réservée aux membres pratiquant le snooker.</Text>
-      </View>
-    )
-  }
   const [entries, setEntries]       = useState<Entry[]>([])
   const [loading, setLoading]       = useState(true)
   const [editingId, setEditingId]   = useState<string | null>(null)
@@ -76,6 +66,16 @@ export default function BreakBoardScreen() {
       setEditValue('')
       fetchEntries()
     }
+  }
+
+  // Accès libre sans connexion ; réservé aux membres snooker connectés
+  if (profile && !profile.disciplines.includes('snooker')) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyEmoji}>🎱</Text>
+        <Text style={styles.emptyText}>Cette section est réservée aux membres pratiquant le snooker.</Text>
+      </View>
+    )
   }
 
   if (loading) {
