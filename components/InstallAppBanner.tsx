@@ -90,10 +90,13 @@ export default function InstallAppBanner() {
             }
           }}
         >
-          <Ionicons name="phone-portrait-outline" size={20} color={colors.gold} />
-          <Text style={styles.text} numberOfLines={2}>
-            Plus pratique et rapide : Ajoutez l&apos;app sur votre téléphone !
-          </Text>
+          <Ionicons name="download-outline" size={20} color={colors.gold} />
+          <View style={styles.texts}>
+            <Text style={styles.line1}>Plus pratique et rapide :</Text>
+            <Text style={styles.link} numberOfLines={1}>
+              Ajoutez l&apos;app sur votre téléphone !
+            </Text>
+          </View>
         </Pressable>
         <Pressable
           style={styles.close}
@@ -104,7 +107,7 @@ export default function InstallAppBanner() {
           }}
           accessibilityLabel="Fermer"
         >
-          <Ionicons name="close" size={18} color={colors.textMuted} />
+          <Ionicons name="close" size={18} color={colors.text} />
         </Pressable>
       </View>
     </View>
@@ -122,10 +125,10 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.green,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.green,
     paddingLeft: 14,
     paddingRight: 6,
     paddingVertical: 10,
@@ -139,13 +142,27 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 10,
   },
-  text: {
+  texts: {
     flex: 1,
+    alignItems: 'center',
+  },
+  line1: {
     fontSize: 14,
     lineHeight: 18,
+    textAlign: 'center',
     color: colors.text,
+    fontWeight: '600',
+  },
+  link: {
+    fontSize: 14,
+    lineHeight: 18,
+    textAlign: 'center',
+    color: colors.goldLight,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
   close: {
     padding: 6,
