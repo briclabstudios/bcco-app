@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native'
+import { View, StyleSheet, ScrollView, Alert } from 'react-native'
 import { Text, TextInput, Button, Checkbox, ActivityIndicator, Switch } from 'react-native-paper'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
@@ -85,11 +85,8 @@ export default function EditNewsScreen() {
         if (error) {
           Alert.alert('Erreur', "Impossible de supprimer la publication.")
           setDeleting(false)
-        } else if (Platform.OS === 'web') {
-          const base = __DEV__ ? '' : '/bcco-app'
-          window.location.assign(`${base}/`)
         } else {
-          router.back()
+          router.replace('/(tabs)')
         }
       },
       'Supprimer',

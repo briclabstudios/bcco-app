@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native'
 import { Text, TextInput, Button, ActivityIndicator } from 'react-native-paper'
 import { Calendar } from 'react-native-calendars'
 import { useRouter, useLocalSearchParams } from 'expo-router'
@@ -113,11 +113,8 @@ export default function EditEventScreen() {
         if (error) {
           Alert.alert('Erreur', "Impossible de supprimer l'événement.")
           setDeleting(false)
-        } else if (Platform.OS === 'web') {
-          const base = __DEV__ ? '' : '/bcco-app'
-          window.location.assign(`${base}/agenda`)
         } else {
-          router.back()
+          router.replace('/(tabs)/agenda')
         }
       },
       'Supprimer',

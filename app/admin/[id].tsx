@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native'
+import { View, StyleSheet, ScrollView, Alert } from 'react-native'
 import { Text, Button, Avatar, ActivityIndicator, RadioButton, Checkbox } from 'react-native-paper'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../lib/supabase'
@@ -76,12 +76,7 @@ export default function MemberDetailScreen() {
           Alert.alert('Erreur', `Impossible de supprimer ce membre : ${detail}`)
           setDeleting(false)
         } else {
-          if (Platform.OS === 'web') {
-            const base = __DEV__ ? '' : '/bcco-app'
-            window.location.assign(`${base}/admin`)
-          } else {
-            router.back()
-          }
+          router.replace('/(tabs)/admin')
         }
       },
       'Supprimer',
