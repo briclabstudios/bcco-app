@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native'
-import { Text, TextInput, Button, HelperText } from 'react-native-paper'
+import { Text, TextInput, Button, HelperText, Divider } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { useAuth } from '../contexts/AuthContext'
 import { colors } from '../constants/theme'
@@ -109,6 +109,19 @@ export default function LoginScreen() {
             Se connecter
           </Button>
 
+          <Divider style={styles.divider} />
+
+          <Text style={styles.signupMessage}>Vous n&apos;avez pas encore de profil ?</Text>
+          <Button
+            mode="outlined"
+            onPress={() => router.push('/signup')}
+            style={styles.signupButton}
+            textColor={colors.gold}
+            icon="account-plus-outline"
+          >
+            Créer mon profil
+          </Button>
+
           <Button
             mode="text"
             onPress={() => router.back()}
@@ -172,6 +185,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: colors.background,
+  },
+  divider: {
+    backgroundColor: colors.border,
+    marginVertical: 16,
+  },
+  signupMessage: {
+    color: colors.textMuted,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  signupButton: {
+    borderRadius: 8,
+    borderColor: colors.gold,
+    paddingVertical: 4,
   },
   cancelButton: {
     marginTop: 4,

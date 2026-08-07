@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native'
 import { Text, Button, Avatar, TextInput, ActivityIndicator, Checkbox, Switch } from 'react-native-paper'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -20,7 +20,7 @@ const DISCIPLINE_LABEL: Record<string, string> = {
 }
 
 export default function ProfilScreen() {
-  const { session, profile, signOut, refreshProfile } = useAuth()
+  const { session, profile, signOut, refreshProfile, loading } = useAuth()
   const router = useRouter()
 
   const [editing, setEditing]       = useState(false)
@@ -32,23 +32,17 @@ export default function ProfilScreen() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [breakMax, setBreakMax]     = useState<string>('')
 
-  if (!session) {
+  // Redirection automatique vers la page de connexion si on n'est pas connecté
+  useFocusEffect(
+    useCallback(() => {
+      if (!loading && !session) router.push('/login')
+    }, [loading, session, router])
+  )
+
+  if (loading || !session) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emoji}>🎱</Text>
-        <Text style={styles.title}>Mon Profil</Text>
-        <Text style={styles.subtitle}>
-          Connectez-vous pour accéder à votre profil et aux fonctionnalités du club.
-        </Text>
-        <Button
-          mode="contained"
-          onPress={() => router.push('/login')}
-          buttonColor={colors.gold}
-          labelStyle={{ color: colors.background, fontWeight: 'bold' }}
-          style={styles.button}
-        >
-          Se connecter
-        </Button>
+        <ActivityIndicator color={colors.gold} size="large" />
       </View>
     )
   }
@@ -364,9 +358,6 @@ const styles = StyleSheet.create({
     padding: 32,
     gap: 16,
   },
-  emoji:    { fontSize: 56 },
-  title:    { fontSize: 22, fontWeight: 'bold', color: colors.gold },
-  subtitle: { color: colors.textMuted, textAlign: 'center', lineHeight: 22 },
   avatarSection: { alignItems: 'center', marginBottom: 8 },
   avatarBadge: {
     position: 'absolute',

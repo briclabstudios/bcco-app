@@ -75,6 +75,17 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="login" options={{ presentation: 'modal' }} />
           <Stack.Screen
+            name="signup"
+            options={{
+              presentation: 'modal',
+              headerShown: true,
+              title: 'Créer mon profil',
+              headerStyle: { backgroundColor: colors.surface },
+              headerTintColor: colors.gold,
+              headerRight: () => <HeaderLogo />,
+            }}
+          />
+          <Stack.Screen
             name="forgot-password"
             options={{
               presentation: 'modal',
