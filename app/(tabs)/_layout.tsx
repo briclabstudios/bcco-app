@@ -126,6 +126,7 @@ export default function DrawerLayout() {
       <Drawer.Screen name="profil"     options={{ headerTitle: 'Mon profil' }} />
       <Drawer.Screen name="liens"      options={{ headerTitle: 'Liens utiles' }} />
       <Drawer.Screen name="apropos"    options={{ headerTitle: 'À propos' }} />
+      <Drawer.Screen name="dashboard"  options={{ headerTitle: 'Dashboard', drawerItemStyle: { display: 'none' } }} />
       <Drawer.Screen name="admin"      options={{ headerTitle: 'Admin', drawerItemStyle: { display: 'none' } }} />
     </Drawer>
   )
