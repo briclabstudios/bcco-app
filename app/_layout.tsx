@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { theme, colors } from '../constants/theme'
 import HeaderLogo from '../components/HeaderLogo'
+import InstallAppBanner from '../components/InstallAppBanner'
 import { registerForPushNotifications } from '../lib/notifications'
 
 const SPLASH_DURATION = 2000
@@ -175,6 +176,8 @@ export default function RootLayout() {
           />
         </Stack>
         <StatusBar style="light" />
+
+        <InstallAppBanner />
 
         {!splashDone && <SplashScreen opacity={opacity} />}
       </PaperProvider>

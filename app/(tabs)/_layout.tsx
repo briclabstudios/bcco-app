@@ -7,7 +7,6 @@ import { usePathname, useRouter } from 'expo-router'
 import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
 import HeaderLogo from '../../components/HeaderLogo'
-import InstallAppButton from '../../components/InstallAppButton'
 
 const MENU_ITEMS = [
   { label: 'Actualités',          icon: 'newspaper-outline',          href: '/(tabs)/'           },
@@ -103,9 +102,6 @@ function CustomDrawerContent(props: any) {
           />
         </>
       )}
-
-      {/* Installer la PWA (web uniquement) */}
-      <InstallAppButton closeDrawer={() => props.navigation.closeDrawer()} />
     </DrawerContentScrollView>
   )
 }
