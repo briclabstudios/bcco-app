@@ -13,8 +13,25 @@ type Props = {
   closeDrawer: () => void
 }
 
+function isStandalone(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false
+  return window.matchMedia('(display-mode: standalone)').matches
+}
+
+function showInstallInstructions() {
+  const isIOS =
+    typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const message = isIOS
+    ? "Sur iPhone/iPad, ouvrez le menu Partager (carré avec une flèche vers le haut) puis « Sur l'écran d'accueil »."
+    : "Utilisez l'icône d'installation dans la barre d'adresse de votre navigateur, ou le menu du navigateur puis « Installer l'application »."
+  if (typeof window !== 'undefined') {
+    window.alert("Installer l'application\n\n" + message)
+  }
+}
+
 export default function InstallAppButton({ closeDrawer }: Props) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [standalone, setStandalone]         = useState(isStandalone)
 
   useEffect(() => {
     if (Platform.OS !== 'web') return
@@ -25,17 +42,26 @@ export default function InstallAppButton({ closeDrawer }: Props) {
     }
     function onAppInstalled() {
       setDeferredPrompt(null)
+      setStandalone(true)
+    }
+    function onDisplayModeChange(e: MediaQueryListEvent) {
+      setStandalone(e.matches)
     }
 
     window.addEventListener('beforeinstallprompt' as any, onBeforeInstallPrompt)
     window.addEventListener('appinstalled', onAppInstalled)
+    const mq = window.matchMedia('(display-mode: standalone)')
+    mq.addEventListener?.('change', onDisplayModeChange)
+
     return () => {
       window.removeEventListener('beforeinstallprompt' as any, onBeforeInstallPrompt)
       window.removeEventListener('appinstalled', onAppInstalled)
+      mq.removeEventListener?.('change', onDisplayModeChange)
     }
   }, [])
 
-  if (Platform.OS !== 'web' || !deferredPrompt) return null
+  // Web uniquement : masqué uniquement si on est déjà dans l'app installée (standalone).
+  if (Platform.OS !== 'web' || standalone) return null
 
   return (
     <>
@@ -44,10 +70,14 @@ export default function InstallAppButton({ closeDrawer }: Props) {
         label="Installer l'application"
         icon={({ size }) => <Ionicons name="download-outline" size={size} color={colors.gold} />}
         onPress={async () => {
-          try {
-            await deferredPrompt.prompt()
-          } catch {}
-          setDeferredPrompt(null)
+          if (deferredPrompt) {
+            try {
+              await deferredPrompt.prompt()
+            } catch {}
+            setDeferredPrompt(null)
+          } else {
+            showInstallInstructions()
+          }
           closeDrawer()
         }}
         focused={false}
