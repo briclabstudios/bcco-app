@@ -53,3 +53,19 @@ export async function sendNotification(
     console.warn('Send notification failed:', e)
   }
 }
+
+export async function sendBreakRecord(
+  prenom: string,
+  nom: string,
+  valeur: number,
+  accessToken: string,
+): Promise<void> {
+  try {
+    await supabase.functions.invoke('send-break-record', {
+      body: { prenom, nom, valeur },
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+  } catch (e) {
+    console.warn('Send break record notification failed:', e)
+  }
+}

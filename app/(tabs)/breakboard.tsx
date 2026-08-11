@@ -4,6 +4,7 @@ import { Text, ActivityIndicator, IconButton, TextInput, Button } from 'react-na
 import { useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { sendBreakRecord } from '../../lib/notifications'
 import { colors } from '../../constants/theme'
 
 type Entry = {
@@ -53,6 +54,7 @@ export default function BreakBoardScreen() {
       Alert.alert('Erreur', 'Veuillez saisir un nombre valide.')
       return
     }
+    const previous = entries.find(e => e.id === session!.user.id)?.break_max ?? null
     setSaving(true)
     const { error } = await supabase
       .from('profiles')
@@ -64,6 +66,9 @@ export default function BreakBoardScreen() {
     } else {
       setEditingId(null)
       setEditValue('')
+      if (parsed !== null && parsed > (previous ?? 0) && profile) {
+        sendBreakRecord(profile.prenom, profile.nom, parsed, session!.access_token)
+      }
       fetchEntries()
     }
   }
