@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { View, StyleSheet, Image, TouchableOpacity, Modal, Dimensions, Pressable } from 'react-native'
+import { View, StyleSheet, Image, TouchableOpacity, Modal, Dimensions } from 'react-native'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -70,9 +70,8 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
   const [pickerTop, setPickerTop]     = useState(0)
   const [pickerLeft, setPickerLeft]   = useState(0)
   const [hoveredKey, setHoveredKey]   = useState<string | null>(null)
-  const [descExpanded, setDescExpanded] = useState(false)
+  const [expanded, setExpanded]       = useState(false)
   const [descOverflow, setDescOverflow] = useState(false)
-  const [imageExpanded, setImageExpanded] = useState(false)
   const [imageRatio, setImageRatio] = useState<number | null>(null)
   const [imageContainerW, setImageContainerW] = useState(0)
 
@@ -89,11 +88,11 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
 
   useEffect(() => {
     const target =
-      imageExpanded && imageRatio && imageContainerW
+      expanded && imageRatio && imageContainerW
         ? imageContainerW / imageRatio
         : 200
     imageHeight.value = withTiming(target, { duration: 280 })
-  }, [imageExpanded, imageRatio, imageContainerW])
+  }, [expanded, imageRatio, imageContainerW])
 
   const animatedImageStyle = useAnimatedStyle(() => ({
     height: imageHeight.value,
@@ -143,7 +142,10 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
   }
 
   return (
-    <Card style={[styles.card, post.epingle && styles.cardPinned]}>
+    <Card
+      style={[styles.card, post.epingle && styles.cardPinned]}
+      onPress={() => setExpanded(v => !v)}
+    >
 
       {post.epingle && (
         <View style={styles.pinnedBanner}>
@@ -164,42 +166,33 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
 
       <Card.Content style={styles.content}>
         <Text style={styles.titre}>{post.titre}</Text>
-        <Pressable
-          onPress={() => descOverflow && setDescExpanded(v => !v)}
-          disabled={!descOverflow}
+        <Text
+          style={styles.description}
+          numberOfLines={expanded ? undefined : 3}
         >
+          {post.description}
+        </Text>
+        {/* Mesure invisible du texte complet pour détecter le dépassement */}
+        {!descOverflow && (
           <Text
-            style={styles.description}
-            numberOfLines={descExpanded ? undefined : 3}
+            style={[styles.description, styles.measureHidden]}
+            onTextLayout={e => {
+              if (e.nativeEvent.lines.length > 3) setDescOverflow(true)
+            }}
+            accessible={false}
           >
             {post.description}
           </Text>
-          {/* Mesure invisible du texte complet pour détecter le dépassement */}
-          {!descOverflow && (
-            <Text
-              style={[styles.description, styles.measureHidden]}
-              onTextLayout={e => {
-                if (e.nativeEvent.lines.length > 3) setDescOverflow(true)
-              }}
-              accessible={false}
-            >
-              {post.description}
-            </Text>
-          )}
-          {descOverflow && (
-            <Text style={styles.expandHint}>
-              {descExpanded ? 'Voir moins' : 'Voir plus'}
-            </Text>
-          )}
-        </Pressable>
+        )}
+        {expanded ? (
+          <Text style={styles.expandHint}>Voir moins</Text>
+        ) : (descOverflow || imageIsCropped) ? (
+          <Text style={styles.expandHint}>Voir plus</Text>
+        ) : null}
       </Card.Content>
 
       {post.image_url ? (
-        <Pressable
-          onPress={() => imageIsCropped && setImageExpanded(v => !v)}
-          disabled={!imageIsCropped}
-          onLayout={e => setImageContainerW(e.nativeEvent.layout.width)}
-        >
+        <View onLayout={e => setImageContainerW(e.nativeEvent.layout.width)}>
           <Animated.Image
             source={{ uri: post.image_url }}
             style={[styles.image, animatedImageStyle]}
@@ -210,14 +203,7 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
               if (src?.width && src?.height) setImageRatio(src.width / src.height)
             }}
           />
-          {imageIsCropped && (
-            <View style={styles.imageHintWrap} pointerEvents="none">
-              <Text style={styles.imageHint}>
-                {imageExpanded ? 'Réduire' : 'Voir en entier'}
-              </Text>
-            </View>
-          )}
-        </Pressable>
+        </View>
       ) : null}
 
       {reactionCounts.length > 0 && (
@@ -348,20 +334,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   image: { width: '100%', height: 200, marginTop: 10 },
-  imageHintWrap: {
-    position: 'absolute',
-    right: 8,
-    bottom: 8,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  imageHint: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '600',
-  },
   reactionCounts: {
     flexDirection: 'row',
     flexWrap: 'wrap',

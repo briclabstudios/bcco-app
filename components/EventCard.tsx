@@ -1,5 +1,10 @@
-import { useState } from 'react'
-import { View, StyleSheet, Image, Pressable } from 'react-native'
+import { useEffect, useState } from 'react'
+import { View, StyleSheet, Image } from 'react-native'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated'
 import { Text, Card, IconButton } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { colors } from '../constants/theme'
@@ -56,11 +61,42 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
   const isAuthor   = !!currentUserId && (currentUserId === event.auteur_id || !!isAdmin)
   const authorName = event.author ? `${event.author.prenom} ${event.author.nom}` : 'Auteur inconnu'
 
-  const [descExpanded, setDescExpanded] = useState(false)
+  const [expanded, setExpanded]       = useState(false)
   const [descOverflow, setDescOverflow] = useState(false)
+  const [imageRatio, setImageRatio]   = useState<number | null>(null)
+  const [imageContainerW, setImageContainerW] = useState(0)
+
+  useEffect(() => {
+    if (!event.image_url) return
+    Image.getSize(
+      event.image_url,
+      (w, h) => { if (w && h) setImageRatio(w / h) },
+      () => {},
+    )
+  }, [event.image_url])
+
+  const imageHeight = useSharedValue(200)
+
+  useEffect(() => {
+    const target =
+      expanded && imageRatio && imageContainerW
+        ? imageContainerW / imageRatio
+        : 200
+    imageHeight.value = withTiming(target, { duration: 280 })
+  }, [expanded, imageRatio, imageContainerW])
+
+  const animatedImageStyle = useAnimatedStyle(() => ({
+    height: imageHeight.value,
+  }))
+
+  // L'image est considérée comme cropée si son ratio naturel diffère du ratio affiché
+  const naturalDisplayedHeight = imageRatio && imageContainerW
+    ? imageContainerW / imageRatio
+    : 0
+  const imageIsCropped = naturalDisplayedHeight > 201
 
   return (
-    <Card style={styles.card}>
+    <Card style={styles.card} onPress={() => setExpanded(v => !v)}>
 
       {/* Ligne tags : discipline */}
       <View style={styles.tags}>
@@ -80,13 +116,10 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
         </View>
         <Text style={styles.date}>{formatEventDate(event.date_debut, event.date_fin)}</Text>
         {event.description ? (
-          <Pressable
-            onPress={() => descOverflow && setDescExpanded(v => !v)}
-            disabled={!descOverflow}
-          >
+          <>
             <Text
               style={styles.description}
-              numberOfLines={descExpanded ? undefined : 2}
+              numberOfLines={expanded ? undefined : 2}
             >
               {event.description}
             </Text>
@@ -102,18 +135,29 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
                 {event.description}
               </Text>
             )}
-            {descOverflow && (
-              <Text style={styles.expandHint}>
-                {descExpanded ? 'Voir moins' : 'Voir plus'}
-              </Text>
-            )}
-          </Pressable>
+            {expanded ? (
+              <Text style={styles.expandHint}>Voir moins</Text>
+            ) : (descOverflow || imageIsCropped) ? (
+              <Text style={styles.expandHint}>Voir plus</Text>
+            ) : null}
+          </>
         ) : null}
       </Card.Content>
 
       {/* Image */}
       {event.image_url ? (
-        <Image source={{ uri: event.image_url }} style={styles.image} resizeMode="cover" />
+        <View onLayout={e => setImageContainerW(e.nativeEvent.layout.width)}>
+          <Animated.Image
+            source={{ uri: event.image_url }}
+            style={[styles.image, animatedImageStyle]}
+            resizeMode="cover"
+            onLoad={e => {
+              if (imageRatio) return
+              const src = (e.nativeEvent as any)?.source
+              if (src?.width && src?.height) setImageRatio(src.width / src.height)
+            }}
+          />
+        </View>
       ) : null}
 
       {/* Footer : auteur + bouton éditer */}
