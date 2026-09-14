@@ -41,7 +41,7 @@ export default function EditEventScreen() {
   const [titre, setTitre]             = useState('')
   const [description, setDescription] = useState('')
   const [type, setType]               = useState<EventType>('événement')
-  const [discipline, setDiscipline]   = useState<Discipline>('snooker')
+  const [discipline, setDiscipline]   = useState<Discipline | null>(null)
   const [dateDebut, setDateDebut]     = useState('')
   const [dateFin, setDateFin]         = useState('')
   const [showDebutCal, setShowDebutCal] = useState(false)
@@ -179,13 +179,15 @@ export default function EditEventScreen() {
         ))}
       </View>
 
-      <Text style={styles.sectionLabel}>Discipline *</Text>
+      <Text style={styles.sectionLabel}>
+        Discipline <Text style={styles.optional}>(optionnel)</Text>
+      </Text>
       <View style={styles.optionRow}>
         {(['snooker', 'carambole'] as Discipline[]).map(d => (
           <TouchableOpacity
             key={d}
             style={[styles.optionBtn, discipline === d && styles.optionBtnSelected]}
-            onPress={() => setDiscipline(d)}
+            onPress={() => setDiscipline(prev => prev === d ? null : d)}
           >
             <Text style={[styles.optionText, discipline === d && styles.optionTextSelected]}>
               {d === 'snooker' ? '🎱 Snooker' : '🟡 Carambole'}

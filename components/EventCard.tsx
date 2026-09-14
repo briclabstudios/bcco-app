@@ -14,7 +14,7 @@ export type AgendaEvent = {
   titre: string
   description: string | null
   type_evenement: 'tournoi' | 'événement' | 'autre'
-  discipline: 'snooker' | 'carambole'
+  discipline: 'snooker' | 'carambole' | null
   date_debut: string
   date_fin: string | null
   image_url: string | null
@@ -100,9 +100,11 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
 
       {/* Ligne tags : discipline */}
       <View style={styles.tags}>
-        <View style={[styles.tag, { backgroundColor: DISCIPLINE_COLORS[event.discipline] ?? colors.surfaceVariant }]}>
-          <Text style={styles.tagText}>#{event.discipline}</Text>
-        </View>
+        {event.discipline ? (
+          <View style={[styles.tag, { backgroundColor: DISCIPLINE_COLORS[event.discipline] ?? colors.surfaceVariant }]}>
+            <Text style={styles.tagText}>#{event.discipline}</Text>
+          </View>
+        ) : null}
         <View style={[styles.tag, { backgroundColor: typeConfig.color + '33', borderWidth: 1, borderColor: typeConfig.color }]}>
           <Text style={[styles.tagText, { color: typeConfig.color }]}>{event.type_evenement}</Text>
         </View>
