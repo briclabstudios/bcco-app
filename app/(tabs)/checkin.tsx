@@ -234,7 +234,7 @@ export default function DisponibilitesScreen() {
                         {mePresent && <View style={styles.meDot} />}
                         {others.length > 0 && (
                           <Text style={[styles.countBadge, mePresent && styles.countBadgeMe]}>
-                            +{others.length}
+                            {others.length}
                           </Text>
                         )}
                       </>
