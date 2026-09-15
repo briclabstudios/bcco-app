@@ -41,7 +41,11 @@ export default function LoginScreen() {
 
         {/* Logo / Titre */}
         <View style={styles.header}>
-          <Text style={styles.emoji}>🎱</Text>
+          <Image
+            source={require('../assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>BCCO</Text>
           <Text style={styles.subtitle}>Billard Club du Canon d'Or</Text>
         </View>
@@ -151,9 +155,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 48,
   },
-  emoji: {
-    fontSize: 56,
-    marginBottom: 8,
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 12,
   },
   title: {
     fontSize: 32,
