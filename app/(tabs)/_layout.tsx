@@ -1,12 +1,12 @@
 import { Drawer } from 'expo-router/drawer'
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer'
 import { Ionicons } from '@expo/vector-icons'
-import { View, Image, StyleSheet } from 'react-native'
+import { View, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import { Text, Divider } from 'react-native-paper'
 import { usePathname, useRouter } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '../../contexts/AuthContext'
 import { colors } from '../../constants/theme'
-import HeaderLogo from '../../components/HeaderLogo'
 
 const MENU_ITEMS = [
   { label: 'Actualités',          icon: 'newspaper-outline',          href: '/(tabs)/actualites' },
@@ -108,15 +108,39 @@ function CustomDrawerContent(props: any) {
   )
 }
 
+function CustomDrawerHeader({ navigation, route, options }: any) {
+  const insets = useSafeAreaInsets()
+  const title = typeof options.headerTitle === 'string'
+    ? options.headerTitle
+    : options.title ?? route.name
+
+  return (
+    <TouchableOpacity
+      style={[styles.appHeader, { paddingTop: insets.top + 6 }]}
+      activeOpacity={0.85}
+      onPress={() => navigation.openDrawer()}
+    >
+      <View style={styles.appHeaderSide}>
+        <Ionicons name="menu" size={26} color={colors.gold} />
+      </View>
+      <Text style={styles.appHeaderTitle} numberOfLines={1}>{title}</Text>
+      <View style={styles.appHeaderSide}>
+        <Image
+          source={require('../../assets/images/logo.png')}
+          style={styles.appHeaderLogo}
+          resizeMode="contain"
+        />
+      </View>
+    </TouchableOpacity>
+  )
+}
+
 export default function DrawerLayout() {
   return (
     <Drawer
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerStyle:           { backgroundColor: colors.surface },
-        headerTintColor:       colors.gold,
-        headerTitleStyle:      { fontWeight: 'bold' },
-        headerRight:           () => <HeaderLogo />,
+        header:                CustomDrawerHeader,
         drawerStyle:           { backgroundColor: colors.background, width: 280 },
         drawerActiveTintColor: colors.gold,
         sceneStyle:            { backgroundColor: colors.background },
@@ -137,6 +161,32 @@ export default function DrawerLayout() {
 }
 
 const styles = StyleSheet.create({
+  appHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    paddingHorizontal: 14,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  appHeaderSide: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appHeaderTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: colors.gold,
+    paddingHorizontal: 8,
+  },
+  appHeaderLogo: {
+    width: 32,
+    height: 32,
+  },
   drawerContainer: {
     flex: 1,
     backgroundColor: colors.background,
