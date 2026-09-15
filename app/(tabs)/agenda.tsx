@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
-import { View, StyleSheet, ScrollView } from 'react-native'
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
 import { Text, FAB, ActivityIndicator } from 'react-native-paper'
 import { useRouter, useFocusEffect } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { Calendar, LocaleConfig } from 'react-native-calendars'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -46,6 +47,12 @@ function formatMonthFr(yearMonth: string): string {
   return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 }
 
+function shiftMonth(yearMonth: string, delta: number): string {
+  const [year, month] = yearMonth.split('-').map(Number)
+  const d = new Date(year, month - 1 + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
 export default function AgendaScreen() {
   const { profile, session } = useAuth()
   const router = useRouter()
@@ -54,6 +61,7 @@ export default function AgendaScreen() {
   const [loading, setLoading]           = useState(true)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [visibleMonth, setVisibleMonth] = useState(new Date().toISOString().slice(0, 7))
+  const [calendarOpen, setCalendarOpen] = useState(false)
 
   const canCreate = profile?.role === 'rédacteur' || profile?.role === 'admin'
 
@@ -117,18 +125,59 @@ export default function AgendaScreen() {
   return (
     <View style={styles.container}>
       <ScrollView>
-        <Calendar
-          markedDates={markedDates}
-          onDayPress={day =>
-            setSelectedDate(prev => prev === day.dateString ? null : day.dateString)
-          }
-          onMonthChange={month => {
-            setVisibleMonth(month.dateString.slice(0, 7))
-            setSelectedDate(null)
-          }}
-          theme={calendarTheme}
-          style={styles.calendar}
-        />
+        {/* Barre mois : navigation + déroulement du calendrier */}
+        <View style={styles.monthBar}>
+          <TouchableOpacity
+            style={styles.monthArrow}
+            hitSlop={10}
+            onPress={() => {
+              setVisibleMonth(shiftMonth(visibleMonth, -1))
+              setSelectedDate(null)
+            }}
+          >
+            <Ionicons name="chevron-back" size={22} color={colors.gold} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.monthTitleWrap}
+            onPress={() => setCalendarOpen(v => !v)}
+          >
+            <Text style={styles.monthTitle}>{formatMonthFr(visibleMonth)}</Text>
+            <Ionicons
+              name={calendarOpen ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={colors.gold}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.monthArrow}
+            hitSlop={10}
+            onPress={() => {
+              setVisibleMonth(shiftMonth(visibleMonth, 1))
+              setSelectedDate(null)
+            }}
+          >
+            <Ionicons name="chevron-forward" size={22} color={colors.gold} />
+          </TouchableOpacity>
+        </View>
+
+        {calendarOpen && (
+          <Calendar
+            key={visibleMonth}
+            current={`${visibleMonth}-01`}
+            markedDates={markedDates}
+            onDayPress={day =>
+              setSelectedDate(prev => prev === day.dateString ? null : day.dateString)
+            }
+            firstDay={1}
+            hideArrows
+            renderHeader={() => null}
+            headerStyle={styles.hiddenCalendarHeader}
+            theme={calendarTheme}
+            style={styles.calendar}
+          />
+        )}
 
         <View style={styles.listHeader}>
           <Text style={styles.listTitle}>
@@ -173,6 +222,35 @@ const styles = StyleSheet.create({
   calendar: {
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  monthBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  monthArrow: {
+    padding: 4,
+  },
+  monthTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+  },
+  monthTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.gold,
+    textTransform: 'capitalize',
+  },
+  hiddenCalendarHeader: {
+    height: 0,
+    overflow: 'hidden',
   },
   listHeader: {
     flexDirection: 'row',
