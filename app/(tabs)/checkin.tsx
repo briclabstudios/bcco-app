@@ -90,8 +90,8 @@ export default function DisponibilitesScreen() {
     fetchPresences()
   }, []))
 
-  async function fetchPresences() {
-    setLoading(true)
+  async function fetchPresences(showLoading = true) {
+    if (showLoading) setLoading(true)
     const { data: rawData } = await supabase
       .from('presences_semaine')
       .select('id, user_id, jour, creneau')
@@ -100,7 +100,7 @@ export default function DisponibilitesScreen() {
 
     if (!rawData || rawData.length === 0) {
       setPresences([])
-      setLoading(false)
+      if (showLoading) setLoading(false)
       return
     }
 
@@ -127,7 +127,7 @@ export default function DisponibilitesScreen() {
       ...p,
       profile: profileMap[p.user_id] ?? null,
     })))
-    setLoading(false)
+    if (showLoading) setLoading(false)
   }
 
   async function togglePresence(jour: string, creneau: Creneau) {
@@ -143,7 +143,7 @@ export default function DisponibilitesScreen() {
       await supabase.from('presences_semaine').insert({ user_id: session.user.id, jour, creneau })
     }
     setToggling(null)
-    await fetchPresences()
+    await fetchPresences(false)
     setSelectedCell({ jour, creneau })
   }
 
@@ -232,9 +232,9 @@ export default function DisponibilitesScreen() {
                     ) : (
                       <>
                         {mePresent && <View style={styles.meDot} />}
-                        {others.length > 0 && (
+                        {cellPres.length > 0 && (
                           <Text style={[styles.countBadge, mePresent && styles.countBadgeMe]}>
-                            {others.length}
+                            {cellPres.length}
                           </Text>
                         )}
                       </>
