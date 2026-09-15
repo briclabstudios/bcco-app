@@ -9,7 +9,7 @@ import { colors } from '../../constants/theme'
 import HeaderLogo from '../../components/HeaderLogo'
 
 const MENU_ITEMS = [
-  { label: 'Actualités',          icon: 'newspaper-outline',          href: '/(tabs)/'           },
+  { label: 'Actualités',          icon: 'newspaper-outline',          href: '/(tabs)/actualites' },
   { label: 'Agenda',              icon: 'calendar-outline',           href: '/(tabs)/agenda'     },
   { label: 'Mes présences',        icon: 'location-outline',           href: '/(tabs)/checkin'    },
   { label: 'Break board',         icon: 'trophy-outline',             href: '/(tabs)/breakboard' },
@@ -50,7 +50,7 @@ function CustomDrawerContent(props: any) {
         if (item.href === '/(tabs)/breakboard') {
           return !profile || profile.disciplines.includes('snooker')
         }
-        if (item.href === '/(tabs)/') {
+        if (item.href === '/(tabs)/actualites') {
           return profile?.role === 'admin'
         }
         return true
@@ -122,7 +122,8 @@ export default function DrawerLayout() {
         sceneStyle:            { backgroundColor: colors.background },
       }}
     >
-      <Drawer.Screen name="index"      options={{ headerTitle: 'Les actualités du BCCO' }} />
+      <Drawer.Screen name="index"      options={{ headerTitle: "L'agenda du BCCO" }} />
+      <Drawer.Screen name="actualites"  options={{ headerTitle: 'Les actualités du BCCO' }} />
       <Drawer.Screen name="agenda"     options={{ headerTitle: "L'agenda du BCCO" }} />
       <Drawer.Screen name="checkin"    options={{ headerTitle: 'Mes présences au club' }} />
       <Drawer.Screen name="breakboard" options={{ headerTitle: 'Snooker break board 🎱' }} />

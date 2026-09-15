@@ -5,7 +5,7 @@ export default function HeaderLogo() {
   const router = useRouter()
 
   return (
-    <TouchableOpacity onPress={() => router.push('/(tabs)/')} activeOpacity={0.7}>
+    <TouchableOpacity onPress={() => router.push('/(tabs)/agenda')} activeOpacity={0.7}>
       <Image
         source={require('../assets/images/logo.png')}
         style={styles.logo}

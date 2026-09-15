@@ -73,7 +73,7 @@ export default function DashboardScreen() {
         <Button
           mode="contained"
           style={styles.backButton}
-          onPress={() => router.replace('/(tabs)/')}
+          onPress={() => router.replace('/(tabs)/actualites' as any)}
         >
           Retour aux actualités
         </Button>

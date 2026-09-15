@@ -86,7 +86,7 @@ export default function EditNewsScreen() {
           Alert.alert('Erreur', "Impossible de supprimer la publication.")
           setDeleting(false)
         } else {
-          router.replace('/(tabs)')
+          router.replace('/(tabs)/actualites' as any)
         }
       },
       'Supprimer',

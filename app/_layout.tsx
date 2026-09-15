@@ -39,7 +39,7 @@ function NotificationHandler() {
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener(response => {
       const screen = response.notification.request.content.data?.screen
-      if (screen === 'actus')      router.push('/(tabs)/')
+      if (screen === 'actus')      router.push('/(tabs)/actualites' as any)
       if (screen === 'agenda')     router.push('/(tabs)/agenda')
       if (screen === 'breakboard') router.push('/(tabs)/breakboard')
     })
