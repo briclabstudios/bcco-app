@@ -9,6 +9,7 @@ import { theme, colors } from '../constants/theme'
 import HeaderLogo from '../components/HeaderLogo'
 import InstallAppBanner from '../components/InstallAppBanner'
 import { registerForPushNotifications } from '../lib/notifications'
+import { checkForUpdates } from '../lib/checkForUpdates'
 
 const SPLASH_DURATION = 2000
 const FADE_DURATION   = 500
@@ -56,6 +57,10 @@ export default function RootLayout() {
 
   const [splashDone, setSplashDone] = useState(skipSplash)
   const opacity = useRef(new Animated.Value(skipSplash ? 0 : 1)).current
+
+  useEffect(() => {
+    checkForUpdates()
+  }, [])
 
   useEffect(() => {
     if (skipSplash) return
