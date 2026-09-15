@@ -24,12 +24,17 @@ const CRENEAU_END_HOUR: Record<Creneau, number> = {
   'soir':       25,
 }
 
+const DISCIPLINE_LABEL: Record<string, string> = {
+  snooker:   '🎱 Snooker',
+  carambole: '🟡 Carambole',
+}
+
 type Presence = {
   id: string
   user_id: string
   jour: string
   creneau: string
-  profile: { id: string; prenom: string; nom: string } | null
+  profile: { id: string; prenom: string; nom: string; disciplines: string[] } | null
 }
 
 type SelectedCell = { jour: string; creneau: string } | null
@@ -269,15 +274,24 @@ export default function DisponibilitesScreen() {
             ) : (
               selectedPresences.map(p => (
                 <View key={p.id} style={styles.memberRow}>
-                  <View style={[styles.avatar, p.user_id === session?.user.id && styles.avatarMe]}>
-                    <Text style={[styles.avatarText, p.user_id === session?.user.id && styles.avatarTextMe]}>
-                      {p.profile ? initiales(p.profile.prenom, p.profile.nom) : '?'}
+                  <View style={styles.memberLeft}>
+                    <View style={[styles.avatar, p.user_id === session?.user.id && styles.avatarMe]}>
+                      <Text style={[styles.avatarText, p.user_id === session?.user.id && styles.avatarTextMe]}>
+                        {p.profile ? initiales(p.profile.prenom, p.profile.nom) : '?'}
+                      </Text>
+                    </View>
+                    <Text style={styles.memberName}>
+                      {p.profile ? `${p.profile.prenom} ${p.profile.nom}` : 'Membre'}
+                      {p.user_id === session?.user.id ? '  (moi)' : ''}
                     </Text>
                   </View>
-                  <Text style={styles.memberName}>
-                    {p.profile ? `${p.profile.prenom} ${p.profile.nom}` : 'Membre'}
-                    {p.user_id === session?.user.id ? '  (moi)' : ''}
-                  </Text>
+                  <View style={styles.memberTags}>
+                    {p.profile?.disciplines?.map(d => (
+                      <View key={d} style={styles.discTag}>
+                        <Text style={styles.discTagText}>{DISCIPLINE_LABEL[d] ?? d}</Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               ))
             )}
@@ -412,7 +426,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   detailEmpty: { fontSize: 13, color: colors.textMuted },
-  memberRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  memberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  memberLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  memberTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end', maxWidth: '55%' },
+  discTag: {
+    backgroundColor: colors.surfaceVariant,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  discTagText: { fontSize: 11, color: colors.textMuted, fontWeight: '600' },
   avatar: {
     width: 32,
     height: 32,
