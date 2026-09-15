@@ -111,7 +111,7 @@ export default function LoginScreen() {
 
           <Divider style={styles.divider} />
 
-          <Text style={styles.signupMessage}>Vous n&apos;avez pas encore de profil ?</Text>
+          <Text style={styles.signupMessage}>Vous n&apos;avez pas encore de compte ?</Text>
           <Button
             mode="outlined"
             onPress={() => router.push('/signup')}
@@ -119,7 +119,7 @@ export default function LoginScreen() {
             textColor={colors.gold}
             icon="account-plus-outline"
           >
-            Créer mon profil
+            Créer mon compte
           </Button>
 
           <Button

@@ -81,7 +81,7 @@ export default function RootLayout() {
             options={{
               presentation: 'modal',
               headerShown: true,
-              title: 'Créer mon profil',
+              title: 'Créer mon compte',
               headerStyle: { backgroundColor: colors.surface },
               headerTintColor: colors.gold,
               headerRight: () => <HeaderLogo />,

@@ -67,7 +67,7 @@ export default function SignupScreen() {
         {/* Titre */}
         <View style={styles.header}>
           <Text style={styles.emoji}>🎱</Text>
-          <Text style={styles.title}>Créer mon profil</Text>
+          <Text style={styles.title}>Créer mon compte</Text>
           <Text style={styles.subtitle}>Rejoignez le BCCO</Text>
         </View>
 
@@ -162,7 +162,7 @@ export default function SignupScreen() {
             labelStyle={styles.buttonLabel}
             buttonColor={colors.gold}
           >
-            Créer mon profil
+            Créer mon compte
           </Button>
 
           <Button
