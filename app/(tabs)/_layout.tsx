@@ -50,7 +50,7 @@ function CustomDrawerContent(props: any) {
         if (item.href === '/(tabs)/breakboard') {
           return !profile || profile.disciplines.includes('snooker')
         }
-        if (item.href === '/(tabs)/' || item.href === '/(tabs)/agenda') {
+        if (item.href === '/(tabs)/') {
           return profile?.role === 'admin'
         }
         return true
