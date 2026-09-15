@@ -11,8 +11,8 @@ import HeaderLogo from '../../components/HeaderLogo'
 const MENU_ITEMS = [
   { label: 'Actualités',          icon: 'newspaper-outline',          href: '/(tabs)/'           },
   { label: 'Agenda',              icon: 'calendar-outline',           href: '/(tabs)/agenda'     },
-  { label: 'Break board',         icon: 'trophy-outline',             href: '/(tabs)/breakboard' },
   { label: 'Mes présences',        icon: 'location-outline',           href: '/(tabs)/checkin'    },
+  { label: 'Break board',         icon: 'trophy-outline',             href: '/(tabs)/breakboard' },
   { label: 'Liens utiles',        icon: 'link-outline',               href: '/(tabs)/liens'      },
   { label: 'Mon profil',          icon: 'person-outline',             href: '/(tabs)/profil'     },
 ] as const
@@ -49,6 +49,9 @@ function CustomDrawerContent(props: any) {
       {MENU_ITEMS.filter(item => {
         if (item.href === '/(tabs)/breakboard') {
           return !profile || profile.disciplines.includes('snooker')
+        }
+        if (item.href === '/(tabs)/' || item.href === '/(tabs)/agenda') {
+          return profile?.role === 'admin'
         }
         return true
       }).map(item => (
