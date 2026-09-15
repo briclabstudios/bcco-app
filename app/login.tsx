@@ -128,7 +128,7 @@ export default function LoginScreen() {
 
           <Button
             mode="text"
-            onPress={() => router.replace('/(tabs)')}
+            onPress={() => router.replace('/(tabs)/agenda')}
             textColor={colors.textMuted}
             style={styles.cancelButton}
           >
