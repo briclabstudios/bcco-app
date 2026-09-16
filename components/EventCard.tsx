@@ -197,7 +197,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginHorizontal: 12,
     marginBottom: 10,
-    minHeight: 195,
   },
   tags: {
     flexDirection: 'row',
