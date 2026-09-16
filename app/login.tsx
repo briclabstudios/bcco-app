@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native'
+import { View, StyleSheet, KeyboardAvoidingView, Platform, Image, TouchableOpacity } from 'react-native'
 import { Text, TextInput, Button, HelperText, Divider } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { useAuth } from '../contexts/AuthContext'
@@ -41,11 +41,18 @@ export default function LoginScreen() {
 
         {/* Logo / Titre */}
         <View style={styles.header}>
-          <Image
-            source={require('../assets/images/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <TouchableOpacity
+            onPress={() => router.replace('/')}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Accéder à l'accueil"
+          >
+            <Image
+              source={require('../assets/images/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
           <Text style={styles.title}>BCCO</Text>
           <Text style={styles.subtitle}>Billard Club du Canon d'Or</Text>
         </View>
