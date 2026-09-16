@@ -72,6 +72,7 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
   const [hoveredKey, setHoveredKey]   = useState<string | null>(null)
   const [expanded, setExpanded]       = useState(false)
   const [descOverflow, setDescOverflow] = useState(false)
+  const [truncatedText, setTruncatedText] = useState<string | null>(null)
   const [imageRatio, setImageRatio] = useState<number | null>(null)
   const [imageContainerW, setImageContainerW] = useState(0)
 
@@ -168,16 +169,23 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
         <Text style={styles.titre}>{post.titre}</Text>
         <Text
           style={styles.description}
-          numberOfLines={expanded ? undefined : 3}
+          numberOfLines={!expanded && !truncatedText ? 3 : undefined}
+          ellipsizeMode="clip"
         >
-          {post.description}
+          {!expanded && truncatedText ? truncatedText : post.description}
         </Text>
         {/* Mesure invisible du texte complet pour détecter le dépassement */}
         {!descOverflow && (
           <Text
             style={[styles.description, styles.measureHidden]}
             onTextLayout={e => {
-              if (e.nativeEvent.lines.length > 3) setDescOverflow(true)
+              const lines = e.nativeEvent.lines
+              if (lines.length > 3) {
+                setDescOverflow(true)
+                setTruncatedText(
+                  lines.slice(0, 3).map(l => l.text).join(' ').replace(/\s+/g, ' ').trimEnd() + ' [...]'
+                )
+              }
             }}
             accessible={false}
           >
@@ -324,8 +332,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: 0,
-    height: 0,
-    overflow: 'hidden',
   },
   expandHint: {
     fontSize: 12,
