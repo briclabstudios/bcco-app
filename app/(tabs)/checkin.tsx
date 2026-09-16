@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   center:    { flex: 1, alignItems: 'center', justifyContent: 'center' },
   intro: {
     fontSize: 13,
-    color: colors.textMuted,
+    color: colors.textBody,
     padding: 16,
     paddingBottom: 12,
     lineHeight: 20,
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
     marginBottom: 4,
   },
-  detailEmpty: { fontSize: 13, color: colors.textMuted },
+  detailEmpty: { fontSize: 13, color: colors.textBody },
   memberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   memberLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   memberTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end', maxWidth: '55%' },
