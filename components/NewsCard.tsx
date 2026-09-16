@@ -290,6 +290,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
+    minHeight: 195,
   },
   cardPinned: {
     borderColor: colors.error,
