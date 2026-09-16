@@ -9,6 +9,7 @@ export const colors = {
   green:           '#2D5016',
   text:            '#FFFFFF',
   textMuted:       '#A2B2AA',
+  textBody:        '#CCD8D2',
   error:           '#CF6679',
   border:          '#3A745F',
 }

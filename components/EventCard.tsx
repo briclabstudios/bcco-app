@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
     marginTop: 2,
   },
-  description: { fontSize: 14, color: colors.textMuted, lineHeight: 20 },
+  description: { fontSize: 14, color: colors.textBody, lineHeight: 20 },
   measureHidden: {
     position: 'absolute',
     opacity: 0,

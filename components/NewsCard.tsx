@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   tagText: { color: '#fff', fontSize: 11, fontWeight: '600' },
   content: { paddingTop: 8, gap: 6 },
   titre:   { fontSize: 16, fontWeight: 'bold', color: colors.text },
-  description: { fontSize: 14, color: colors.textMuted, lineHeight: 20 },
+  description: { fontSize: 14, color: colors.textBody, lineHeight: 20 },
   measureHidden: {
     position: 'absolute',
     opacity: 0,
