@@ -129,21 +129,23 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
             </Text>
             {/* Mesure invisible du texte complet pour détecter le dépassement */}
             {!descOverflow && (
-              <Text
-                style={[styles.description, styles.measureHidden]}
-                onTextLayout={e => {
-                  const lines = e.nativeEvent.lines
-                  if (lines.length > 2) {
-                    setDescOverflow(true)
-                    setTruncatedText(
-                      lines.slice(0, 2).map(l => l.text).join(' ').replace(/\s+/g, ' ').trimEnd() + ' [...]'
-                    )
-                  }
-                }}
-                accessible={false}
-              >
-                {event.description}
-              </Text>
+              <View style={styles.measureWrap} pointerEvents="none">
+                <Text
+                  style={styles.description}
+                  onTextLayout={e => {
+                    const lines = e.nativeEvent.lines
+                    if (lines.length > 2) {
+                      setDescOverflow(true)
+                      setTruncatedText(
+                        lines.slice(0, 2).map(l => l.text).join(' ').replace(/\s+/g, ' ').trimEnd() + ' [...]'
+                      )
+                    }
+                  }}
+                  accessible={false}
+                >
+                  {event.description}
+                </Text>
+              </View>
             )}
             {expanded ? (
               <Text style={styles.expandHint}>Voir moins</Text>
@@ -222,7 +224,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   description: { fontSize: 14, color: colors.textBody, lineHeight: 20 },
-  measureHidden: {
+  measureWrap: {
     position: 'absolute',
     opacity: 0,
     left: 0,

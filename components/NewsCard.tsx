@@ -176,21 +176,23 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
         </Text>
         {/* Mesure invisible du texte complet pour détecter le dépassement */}
         {!descOverflow && (
-          <Text
-            style={[styles.description, styles.measureHidden]}
-            onTextLayout={e => {
-              const lines = e.nativeEvent.lines
-              if (lines.length > 3) {
-                setDescOverflow(true)
-                setTruncatedText(
-                  lines.slice(0, 3).map(l => l.text).join(' ').replace(/\s+/g, ' ').trimEnd() + ' [...]'
-                )
-              }
-            }}
-            accessible={false}
-          >
-            {post.description}
-          </Text>
+          <View style={styles.measureWrap} pointerEvents="none">
+            <Text
+              style={styles.description}
+              onTextLayout={e => {
+                const lines = e.nativeEvent.lines
+                if (lines.length > 3) {
+                  setDescOverflow(true)
+                  setTruncatedText(
+                    lines.slice(0, 3).map(l => l.text).join(' ').replace(/\s+/g, ' ').trimEnd() + ' [...]'
+                  )
+                }
+              }}
+              accessible={false}
+            >
+              {post.description}
+            </Text>
+          </View>
         )}
         {expanded ? (
           <Text style={styles.expandHint}>Voir moins</Text>
@@ -326,7 +328,7 @@ const styles = StyleSheet.create({
   content: { paddingTop: 8, gap: 6 },
   titre:   { fontSize: 16, fontWeight: 'bold', color: colors.text },
   description: { fontSize: 14, color: colors.textBody, lineHeight: 20 },
-  measureHidden: {
+  measureWrap: {
     position: 'absolute',
     opacity: 0,
     left: 0,
