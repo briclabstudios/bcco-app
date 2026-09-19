@@ -30,7 +30,6 @@ export default function ResetPasswordScreen() {
   const [confirm, setConfirm]   = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading]   = useState(false)
-  const [success, setSuccess]   = useState(false)
 
   const processedRef = useRef(false)
 
@@ -109,7 +108,7 @@ export default function ResetPasswordScreen() {
     try {
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
-      setSuccess(true)
+      router.replace('/(tabs)/profil')
     } catch (e: any) {
       setError(e?.message || 'Une erreur est survenue.')
     } finally {
@@ -129,22 +128,7 @@ export default function ResetPasswordScreen() {
           <Text style={styles.title}>Nouveau mot de passe</Text>
         </View>
 
-        {success ? (
-          <View style={styles.form}>
-            <Text style={styles.success}>
-              Votre mot de passe a bien été réinitialisé. Vous pouvez vous connecter avec votre nouveau mot de passe.
-            </Text>
-            <Button
-              mode="contained"
-              onPress={() => router.replace('/login')}
-              style={styles.button}
-              labelStyle={styles.buttonLabel}
-              buttonColor={colors.gold}
-            >
-              Se connecter
-            </Button>
-          </View>
-        ) : ready ? (
+        {ready ? (
           <View style={styles.form}>
             <TextInput
               label="Nouveau mot de passe"
