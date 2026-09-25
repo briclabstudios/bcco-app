@@ -14,6 +14,7 @@ export type Profile = {
   notif_actus: boolean
   notif_agenda: boolean
   break_max: number | null
+  break_max_all_time: number | null
 }
 
 type AuthContextType = {

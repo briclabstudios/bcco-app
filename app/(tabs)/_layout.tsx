@@ -12,7 +12,7 @@ const MENU_ITEMS = [
   { label: 'Actualités',          icon: 'newspaper-outline',          href: '/(tabs)/actualites' },
   { label: 'Agenda',              icon: 'calendar-outline',           href: '/(tabs)/agenda'     },
   { label: 'Mes présences',        icon: 'location-outline',           href: '/(tabs)/checkin'    },
-  { label: 'Break board',         icon: 'trophy-outline',             href: '/(tabs)/breakboard' },
+  { label: 'Snooker break board', icon: 'trophy-outline',             href: '/(tabs)/breakboard' },
   { label: 'Liens utiles',        icon: 'link-outline',               href: '/(tabs)/liens'      },
   { label: 'Mon profil',          icon: 'person-outline',             href: '/(tabs)/profil'     },
 ] as const

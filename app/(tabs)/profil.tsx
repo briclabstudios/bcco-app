@@ -31,6 +31,7 @@ export default function ProfilScreen() {
   const [avatarUri, setAvatarUri]   = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [breakMax, setBreakMax]     = useState<string>('')
+  const [breakMaxAllTime, setBreakMaxAllTime] = useState<string>('')
 
   // Redirection automatique vers la page de connexion si on n'est pas connecté
   useFocusEffect(
@@ -56,6 +57,7 @@ export default function ProfilScreen() {
     setNom(profile?.nom ?? '')
     setDisciplines(profile?.disciplines ?? [])
     setBreakMax(profile?.break_max != null ? String(profile.break_max) : '')
+    setBreakMaxAllTime(profile?.break_max_all_time != null ? String(profile.break_max_all_time) : '')
     setAvatarUri(null)
     setEditing(true)
   }
@@ -118,6 +120,7 @@ export default function ProfilScreen() {
       if (uploaded) newAvatarUrl = uploaded
     }
     const parsedBreak = breakMax.trim() !== '' ? parseInt(breakMax.trim(), 10) : null
+    const parsedBreakAllTime = breakMaxAllTime.trim() !== '' ? parseInt(breakMaxAllTime.trim(), 10) : null
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -126,6 +129,7 @@ export default function ProfilScreen() {
         disciplines,
         avatar_url: newAvatarUrl,
         break_max: isNaN(parsedBreak as number) ? null : parsedBreak,
+        break_max_all_time: isNaN(parsedBreakAllTime as number) ? null : parsedBreakAllTime,
       })
       .eq('id', session.user.id)
     if (error) {
@@ -190,9 +194,21 @@ export default function ProfilScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionLabel}>Mes records</Text>
           <TextInput
-            label="Série / Break maximum"
+            label="Break maximum snooker - Saison en cours"
             value={breakMax}
             onChangeText={setBreakMax}
+            mode="outlined"
+            outlineColor={colors.border}
+            activeOutlineColor={colors.gold}
+            textColor={colors.text}
+            style={styles.input}
+            theme={{ colors: { onSurfaceVariant: colors.textMuted, background: colors.surface } }}
+            keyboardType="numeric"
+          />
+          <TextInput
+            label="Break maximum snooker - All time"
+            value={breakMaxAllTime}
+            onChangeText={setBreakMaxAllTime}
             mode="outlined"
             outlineColor={colors.border}
             activeOutlineColor={colors.gold}
@@ -277,8 +293,12 @@ export default function ProfilScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Mes records</Text>
         <InfoRow
-          label="Série / Break maximum"
+          label="Break maximum snooker - Saison en cours"
           value={profile?.break_max != null ? String(profile.break_max) : '—'}
+        />
+        <InfoRow
+          label="Break maximum snooker - All time"
+          value={profile?.break_max_all_time != null ? String(profile.break_max_all_time) : '—'}
         />
       </View>
 

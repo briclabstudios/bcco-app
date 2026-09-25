@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { View, StyleSheet, FlatList, Alert } from 'react-native'
-import { Text, ActivityIndicator, IconButton, TextInput, Button } from 'react-native-paper'
+import { Text, ActivityIndicator, IconButton, TextInput, Button, SegmentedButtons } from 'react-native-paper'
 import { useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -12,14 +12,19 @@ type Entry = {
   nom: string
   prenom: string
   break_max: number | null
+  break_max_all_time: number | null
 }
+
+type Mode = 'saison' | 'alltime'
 
 const MEDAL: Record<number, string> = { 0: '🥇', 1: '🥈', 2: '🥉' }
 
 export default function BreakBoardScreen() {
   const { session, profile } = useAuth()
 
-  const [entries, setEntries]       = useState<Entry[]>([])
+  const [entriesSaison, setEntriesSaison] = useState<Entry[]>([])
+  const [entriesAllTime, setEntriesAllTime] = useState<Entry[]>([])
+  const [mode, setMode] = useState<Mode>('saison')
   const [loading, setLoading]       = useState(true)
   const [editingId, setEditingId]   = useState<string | null>(null)
   const [editValue, setEditValue]   = useState('')
@@ -29,17 +34,29 @@ export default function BreakBoardScreen() {
     setLoading(true)
     const { data } = await supabase
       .from('profiles')
-      .select('id, nom, prenom, break_max')
+      .select('id, nom, prenom, break_max, break_max_all_time')
       .contains('disciplines', ['snooker'])
-      .order('break_max', { ascending: false, nullsFirst: false })
-    setEntries((data as Entry[]) ?? [])
+    const all = (data as Entry[]) ?? []
+    const byBreak = (a: Entry, b: Entry) =>
+      (b.break_max ?? -1) - (a.break_max ?? -1)
+    const byBreakAllTime = (a: Entry, b: Entry) =>
+      (b.break_max_all_time ?? -1) - (a.break_max_all_time ?? -1)
+    setEntriesSaison([...all].sort(byBreak))
+    setEntriesAllTime([...all].sort(byBreakAllTime))
     setLoading(false)
   }
 
+  const entries = mode === 'saison' ? entriesSaison : entriesAllTime
+
   useFocusEffect(useCallback(() => { fetchEntries() }, []))
 
+  function currentValue(entry: Entry): number | null {
+    return mode === 'saison' ? entry.break_max : entry.break_max_all_time
+  }
+
   function startEdit(entry: Entry) {
-    setEditValue(entry.break_max != null ? String(entry.break_max) : '')
+    const v = currentValue(entry)
+    setEditValue(v != null ? String(v) : '')
     setEditingId(entry.id)
   }
 
@@ -54,11 +71,15 @@ export default function BreakBoardScreen() {
       Alert.alert('Erreur', 'Veuillez saisir un nombre valide.')
       return
     }
-    const previous = entries.find(e => e.id === session!.user.id)?.break_max ?? null
+    const previous = entries.find(e => e.id === session!.user.id)
+    const previousValue = previous ? currentValue(previous) : null
     setSaving(true)
+    const update = mode === 'saison'
+      ? { break_max: parsed }
+      : { break_max_all_time: parsed }
     const { error } = await supabase
       .from('profiles')
-      .update({ break_max: parsed })
+      .update(update)
       .eq('id', session!.user.id)
     setSaving(false)
     if (error) {
@@ -66,7 +87,7 @@ export default function BreakBoardScreen() {
     } else {
       setEditingId(null)
       setEditValue('')
-      if (parsed !== null && parsed > (previous ?? 0) && profile) {
+      if (parsed !== null && parsed > (previousValue ?? 0) && profile) {
         sendBreakRecord(profile.prenom, profile.nom, parsed, session!.access_token)
       }
       fetchEntries()
@@ -102,6 +123,24 @@ export default function BreakBoardScreen() {
 
   return (
     <View style={styles.container}>
+      <SegmentedButtons
+        value={mode}
+        onValueChange={value => setMode(value as Mode)}
+        density="medium"
+        style={styles.segments}
+        buttons={[
+          { value: 'saison', label: 'Saison en cours' },
+          { value: 'alltime', label: 'All time' },
+        ]}
+        theme={{
+          colors: {
+            secondaryContainer: colors.gold,
+            onSecondaryContainer: colors.background,
+            outline: colors.border,
+            onSurface: colors.text,
+          },
+        }}
+      />
       <FlatList
         data={entries}
         keyExtractor={item => item.id}
@@ -109,11 +148,12 @@ export default function BreakBoardScreen() {
         renderItem={({ item, index }) => {
           const isCurrentUser = session?.user.id === item.id
           const isEditing     = editingId === item.id
+          const value         = currentValue(item)
 
           return (
-            <View style={[styles.row, index === 0 && item.break_max != null && styles.rowFirst, isCurrentUser && styles.rowMe]}>
-              <Text style={[styles.rank, index < 3 && item.break_max != null && styles.rankMedal]}>
-                {item.break_max != null ? (MEDAL[index] ?? `#${index + 1}`) : '—'}
+            <View style={[styles.row, index === 0 && value != null && styles.rowFirst, isCurrentUser && styles.rowMe]}>
+              <Text style={[styles.rank, index < 3 && value != null && styles.rankMedal]}>
+                {value != null ? (MEDAL[index] ?? `#${index + 1}`) : '—'}
               </Text>
 
               <View style={styles.nameCol}>
@@ -163,8 +203,8 @@ export default function BreakBoardScreen() {
               </View>
 
               {!isEditing && (
-                <Text style={[styles.score, index === 0 && styles.scoreFirst, item.break_max == null && styles.scoreDash]}>
-                  {item.break_max ?? '—'}
+                <Text style={[styles.score, index === 0 && styles.scoreFirst, value == null && styles.scoreDash]}>
+                  {value ?? '—'}
                 </Text>
               )}
 
@@ -190,6 +230,11 @@ const styles = StyleSheet.create({
   center:     { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   emptyEmoji: { fontSize: 48 },
   emptyText:  { color: colors.textMuted, fontSize: 15 },
+  segments: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 4,
+  },
   list: { padding: 16, gap: 10 },
   row: {
     flexDirection: 'row',
