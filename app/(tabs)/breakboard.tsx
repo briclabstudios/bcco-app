@@ -87,7 +87,7 @@ export default function BreakBoardScreen() {
     } else {
       setEditingId(null)
       setEditValue('')
-      if (parsed !== null && parsed > (previousValue ?? 0) && profile) {
+      if (mode === 'saison' && parsed !== null && parsed > (previousValue ?? 0) && profile) {
         sendBreakRecord(profile.prenom, profile.nom, parsed, session!.access_token)
       }
       fetchEntries()
