@@ -146,7 +146,7 @@ export default function DrawerLayout() {
         sceneStyle:            { backgroundColor: colors.background },
       }}
     >
-      <Drawer.Screen name="index"      options={{ headerTitle: "L'agenda du BCCO" }} />
+      <Drawer.Screen name="index"      options={{ headerTitle: 'Mes présences au club' }} />
       <Drawer.Screen name="actualites"  options={{ headerTitle: 'Les actualités du BCCO' }} />
       <Drawer.Screen name="agenda"     options={{ headerTitle: "L'agenda du BCCO" }} />
       <Drawer.Screen name="checkin"    options={{ headerTitle: 'Mes présences au club' }} />
