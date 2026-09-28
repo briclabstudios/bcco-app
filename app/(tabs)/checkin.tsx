@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native'
-import { Text, ActivityIndicator } from 'react-native-paper'
+import { Text, ActivityIndicator, Button } from 'react-native-paper'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -149,7 +149,6 @@ export default function DisponibilitesScreen() {
     }
     setToggling(null)
     await fetchPresences(false)
-    setSelectedCell({ jour, creneau })
   }
 
   function getCellPresences(jour: string, creneau: string): Presence[] {
@@ -172,8 +171,8 @@ export default function DisponibilitesScreen() {
     <View style={styles.container}>
       <ScrollView>
         <Text style={styles.intro}>
-          Vous cherchez un partenaire ? Consultez en un coup d'œil les membres ayant planifié leur passage au club les prochains jours, et renseignez vos présences.{'\n\n'}
-          Appuyez sur un créneau pour vous signaler présent et voir les autres membres présents sur ce créneau. Appuyez à nouveau pour supprimer votre présence.
+          Vous cherchez un partenaire ? Consultez en un coup d&apos;œil les membres ayant planifié leur passage au club les prochains jours, et renseignez vos présences.{'\n\n'}
+          Appuyez sur un créneau pour voir les personnes prévues sur ce créneau, puis utilisez le bouton pour vous signaler présent. Appuyez à nouveau sur le créneau pour refermer.
         </Text>
 
         {/* Grille */}
@@ -223,8 +222,6 @@ export default function DisponibilitesScreen() {
                     onPress={() => {
                       if (!past && !session) {
                         router.push('/login')
-                      } else if (!past && session) {
-                        togglePresence(jour, creneau)
                       } else {
                         setSelectedCell(isSelected ? null : { jour, creneau })
                       }
@@ -295,6 +292,36 @@ export default function DisponibilitesScreen() {
                 </View>
               ))
             )}
+            {(() => {
+              const cellKey    = `${selectedCell.jour}-${selectedCell.creneau}`
+              const mePresent  = isMePresent(selectedCell.jour, selectedCell.creneau)
+              const isToggling = toggling === cellKey
+              const isPastCell = isPast(selectedCell.jour, selectedCell.creneau as Creneau)
+              if (isPastCell) {
+                return (
+                  <Text style={styles.detailPast}>Ce créneau est passé, il n&apos;est plus possible de se signaler présent.</Text>
+                )
+              }
+              if (!session) {
+                return (
+                  <Button mode="contained" onPress={() => router.push('/login')}>
+                    Se connecter pour se signaler présent
+                  </Button>
+                )
+              }
+              if (mePresent) {
+                return (
+                  <Button mode="outlined" onPress={() => togglePresence(selectedCell.jour, selectedCell.creneau as Creneau)} disabled={isToggling}>
+                    {isToggling ? '...' : 'Me retirer de ce créneau'}
+                  </Button>
+                )
+              }
+              return (
+                <Button mode="contained" onPress={() => togglePresence(selectedCell.jour, selectedCell.creneau as Creneau)} disabled={isToggling}>
+                  {isToggling ? '...' : 'Me signaler présent sur ce créneau'}
+                </Button>
+              )
+            })()}
             <Text style={styles.detailClose} onPress={() => setSelectedCell(null)}>Fermer ✕</Text>
           </View>
         )}
@@ -426,6 +453,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   detailEmpty: { fontSize: 13, color: colors.textBody },
+  detailPast: { fontSize: 13, color: colors.textMuted, fontStyle: 'italic', marginTop: 2 },
   memberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   memberLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   memberTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end', maxWidth: '55%' },
