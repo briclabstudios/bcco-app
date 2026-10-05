@@ -21,15 +21,17 @@ export default function EditNewsScreen() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [imageUri, setImageUri]         = useState<string | null>(null)
   const [epingle, setEpingle]           = useState(false)
+  const [archive, setArchive]           = useState(false)
   const [loading, setLoading]           = useState(true)
   const [saving, setSaving]             = useState(false)
   const [deleting, setDeleting]         = useState(false)
+  const [archiving, setArchiving]       = useState(false)
 
   useEffect(() => {
     async function fetchPost() {
       const { data } = await supabase
         .from('news_posts')
-        .select('titre, description, tags, image_url, epingle')
+        .select('titre, description, tags, image_url, epingle, archive')
         .eq('id', id)
         .single()
       if (data) {
@@ -38,6 +40,7 @@ export default function EditNewsScreen() {
         setSelectedTags(data.tags ?? [])
         setImageUri(data.image_url ?? null)
         setEpingle(data.epingle ?? false)
+        setArchive(data.archive ?? false)
       }
       setLoading(false)
     }
@@ -91,6 +94,42 @@ export default function EditNewsScreen() {
       },
       'Supprimer',
     )
+  }
+
+  function handleArchive() {
+    if (archive) {
+      confirmAction(
+        'Désarchiver la publication',
+        'Elle réapparaîtra dans le fil des actualités.',
+        async () => {
+          setArchiving(true)
+          const { error } = await supabase.from('news_posts').update({ archive: false }).eq('id', id)
+          if (error) {
+            Alert.alert('Erreur', "Impossible de désarchiver la publication.")
+            setArchiving(false)
+          } else {
+            router.replace('/(tabs)/actualites' as any)
+          }
+        },
+        'Désarchiver',
+      )
+    } else {
+      confirmAction(
+        'Archiver la publication',
+        'Elle sera masquée du fil sans être supprimée. Vous pourrez la désarchiver à tout moment.',
+        async () => {
+          setArchiving(true)
+          const { error } = await supabase.from('news_posts').update({ archive: true }).eq('id', id)
+          if (error) {
+            Alert.alert('Erreur', "Impossible d'archiver la publication.")
+            setArchiving(false)
+          } else {
+            router.replace('/(tabs)/actualites' as any)
+          }
+        },
+        'Archiver',
+      )
+    }
   }
 
   if (loading) {
@@ -182,6 +221,18 @@ export default function EditNewsScreen() {
 
       <Button
         mode="outlined"
+        onPress={handleArchive}
+        loading={archiving}
+        disabled={archiving || saving || deleting}
+        style={styles.archiveButton}
+        textColor={colors.gold}
+        icon={archive ? 'archive-arrow-up-outline' : 'archive-outline'}
+      >
+        {archive ? 'Désarchiver la publication' : 'Archiver la publication'}
+      </Button>
+
+      <Button
+        mode="outlined"
         onPress={handleDelete}
         loading={deleting}
         disabled={deleting || saving}
@@ -214,6 +265,7 @@ const styles = StyleSheet.create({
   button:       { marginTop: 8, borderRadius: 8, paddingVertical: 4 },
   divider:      { height: 1, backgroundColor: colors.border, marginVertical: 8 },
   deleteButton: { borderRadius: 8, borderColor: colors.error, paddingVertical: 4 },
+  archiveButton: { borderRadius: 8, borderColor: colors.gold, paddingVertical: 4 },
   pinRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -28,6 +28,7 @@ export default function ActualitesScreen() {
     const { data } = await supabase
       .from('news_posts')
       .select('*, author:profiles!auteur_id(nom, prenom), likes:news_likes(user_id, reaction)')
+      .eq('archive', false)
       .order('created_at', { ascending: false })
     if (data) setPosts(data as unknown as NewsPost[])
     setLoading(false)
