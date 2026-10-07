@@ -9,6 +9,7 @@ import { Text, Card, IconButton } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { colors } from '../constants/theme'
+import LinkifiedText from '../lib/linkify'
 
 export type NewsPost = {
   id: string
@@ -167,13 +168,12 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
 
       <Card.Content style={styles.content}>
         <Text style={styles.titre}>{post.titre}</Text>
-        <Text
+        <LinkifiedText
           style={styles.description}
           numberOfLines={!expanded && !truncatedText ? 3 : undefined}
           ellipsizeMode="clip"
-        >
-          {!expanded && truncatedText ? truncatedText : post.description}
-        </Text>
+          text={!expanded && truncatedText ? truncatedText : post.description}
+        />
         {/* Mesure invisible du texte complet pour détecter le dépassement */}
         {!descOverflow && (
           <View style={styles.measureWrap} pointerEvents="none">

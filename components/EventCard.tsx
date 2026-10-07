@@ -8,6 +8,7 @@ import Animated, {
 import { Text, Card, IconButton } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { colors } from '../constants/theme'
+import LinkifiedText from '../lib/linkify'
 
 export type AgendaEvent = {
   id: string
@@ -120,13 +121,12 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
         <Text style={styles.date}>{formatEventDate(event.date_debut, event.date_fin)}</Text>
         {event.description ? (
           <>
-            <Text
+            <LinkifiedText
               style={styles.description}
               numberOfLines={!expanded && !truncatedText ? 2 : undefined}
               ellipsizeMode="clip"
-            >
-              {!expanded && truncatedText ? truncatedText : event.description}
-            </Text>
+              text={!expanded && truncatedText ? truncatedText : event.description ?? ''}
+            />
             {/* Mesure invisible du texte complet pour détecter le dépassement */}
             {!descOverflow && (
               <View style={styles.measureWrap} pointerEvents="none">
