@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native'
-import { Text, Button, Avatar, TextInput, ActivityIndicator, Checkbox, Switch } from 'react-native-paper'
+import { Text, Button, Avatar, TextInput, ActivityIndicator, Checkbox, Switch, RadioButton } from 'react-native-paper'
 import { useRouter, useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib/supabase'
@@ -32,6 +32,7 @@ export default function ProfilScreen() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [breakMax, setBreakMax]     = useState<string>('')
   const [breakMaxAllTime, setBreakMaxAllTime] = useState<string>('')
+  const [hasClubKey, setHasClubKey] = useState(false)
 
   // Redirection automatique vers la page de connexion si on n'est pas connecté
   useFocusEffect(
@@ -58,6 +59,7 @@ export default function ProfilScreen() {
     setDisciplines(profile?.disciplines ?? [])
     setBreakMax(profile?.break_max != null ? String(profile.break_max) : '')
     setBreakMaxAllTime(profile?.break_max_all_time != null ? String(profile.break_max_all_time) : '')
+    setHasClubKey(profile?.has_club_key ?? false)
     setAvatarUri(null)
     setEditing(true)
   }
@@ -130,6 +132,7 @@ export default function ProfilScreen() {
         avatar_url: newAvatarUrl,
         break_max: isNaN(parsedBreak as number) ? null : parsedBreak,
         break_max_all_time: isNaN(parsedBreakAllTime as number) ? null : parsedBreakAllTime,
+        has_club_key: hasClubKey,
       })
       .eq('id', session.user.id)
     if (error) {
@@ -236,6 +239,21 @@ export default function ProfilScreen() {
           ))}
         </View>
 
+        {/* Clé du club */}
+        <View style={styles.card}>
+          <Text style={styles.sectionLabel}>Je possède la clé du club</Text>
+          <RadioButton.Group onValueChange={v => setHasClubKey(v === 'oui')} value={hasClubKey ? 'oui' : 'non'}>
+            <View style={styles.checkRow}>
+              <RadioButton value="oui" color={colors.gold} />
+              <Text style={styles.checkLabel} onPress={() => setHasClubKey(true)}>Oui</Text>
+            </View>
+            <View style={styles.checkRow}>
+              <RadioButton value="non" color={colors.gold} />
+              <Text style={styles.checkLabel} onPress={() => setHasClubKey(false)}>Non</Text>
+            </View>
+          </RadioButton.Group>
+        </View>
+
         <Button
           mode="contained"
           onPress={handleSave}
@@ -287,6 +305,10 @@ export default function ProfilScreen() {
           }
         />
         <InfoRow label="Rôle" value={ROLE_LABEL[profile?.role ?? ''] ?? profile?.role ?? '—'} />
+        <InfoRow
+          label="Je possède la clé du club"
+          value={profile?.has_club_key ? 'Oui' : 'Non'}
+        />
       </View>
 
       {/* Mes records */}

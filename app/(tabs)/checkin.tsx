@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native'
-import { Text, ActivityIndicator, Button } from 'react-native-paper'
+import { Text, ActivityIndicator, Button, Icon } from 'react-native-paper'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -34,7 +34,7 @@ type Presence = {
   user_id: string
   jour: string
   creneau: string
-  profile: { id: string; prenom: string; nom: string; disciplines: string[] } | null
+  profile: { id: string; prenom: string; nom: string; disciplines: string[]; has_club_key: boolean | null } | null
 }
 
 type SelectedCell = { jour: string; creneau: string } | null
@@ -112,7 +112,7 @@ export default function DisponibilitesScreen() {
     const userIds = [...new Set(rawData.map((p: any) => p.user_id))]
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, prenom, nom, disciplines')
+      .select('id, prenom, nom, disciplines, has_club_key')
       .in('id', userIds)
 
     const profileMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, p]))
@@ -281,6 +281,9 @@ export default function DisponibilitesScreen() {
                       {p.profile ? `${p.profile.prenom} ${p.profile.nom}` : 'Membre'}
                       {p.user_id === session?.user.id ? '  (moi)' : ''}
                     </Text>
+                    {p.profile?.has_club_key && (
+                      <Icon source="key" size={16} color={colors.gold} />
+                    )}
                   </View>
                   <View style={styles.memberTags}>
                     {p.profile?.disciplines?.map(d => (

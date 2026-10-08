@@ -15,6 +15,7 @@ export type Profile = {
   notif_agenda: boolean
   break_max: number | null
   break_max_all_time: number | null
+  has_club_key: boolean
 }
 
 type AuthContextType = {
