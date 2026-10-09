@@ -50,9 +50,6 @@ function CustomDrawerContent(props: any) {
         if (item.href === '/(tabs)/breakboard') {
           return !profile || profile.disciplines.includes('snooker')
         }
-        if (item.href === '/(tabs)/actualites') {
-          return profile?.role === 'admin'
-        }
         return true
       }).map(item => (
         <DrawerItem
