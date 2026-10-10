@@ -59,8 +59,8 @@ export default function EditNewsScreen() {
     setSaving(true)
     try {
       let image_url: string | null = null
-      // Local URI = nouvelle image à uploader
-      if (imageUri?.startsWith('file://') && session) {
+      // URI locale (file:// mobile ou blob:/data: web) = nouvelle image à uploader
+      if (imageUri && !imageUri.startsWith('http') && session) {
         image_url = await uploadPostImage(imageUri, session.user.id)
       } else {
         // URL distante = on garde, null = supprimée
