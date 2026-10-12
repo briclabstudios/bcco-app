@@ -110,7 +110,15 @@ export default function AgendaScreen() {
         return selectedDate >= start && selectedDate <= end
       })
     : events
-        .filter(e => e.date_debut.startsWith(visibleMonth))
+        .filter(e => {
+          const start = e.date_debut.split('T')[0]
+          const end   = e.date_fin ? e.date_fin.split('T')[0] : start
+          const [y, m] = visibleMonth.split('-').map(Number)
+          const monthStart = `${visibleMonth}-01`
+          const lastDay    = new Date(y, m, 0).getDate()
+          const monthEnd   = `${visibleMonth}-${String(lastDay).padStart(2, '0')}`
+          return start <= monthEnd && end >= monthStart
+        })
         .slice()
         .sort((a, b) => b.date_debut.localeCompare(a.date_debut))
 
