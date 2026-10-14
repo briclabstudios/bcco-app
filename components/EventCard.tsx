@@ -56,11 +56,18 @@ function formatEventDate(debut: string, fin: string | null): string {
   })}`
 }
 
+function publishedLabel(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const days = Math.floor(diff / 86400000)
+  if (days < 1)  return "Publié aujourd'hui"
+  if (days === 1) return 'Publié il y a 1 jour'
+  return `Publié il y a ${days} jours`
+}
+
 export default function EventCard({ event, currentUserId, isAdmin }: Props) {
   const router     = useRouter()
   const typeConfig = TYPE_CONFIG[event.type_evenement] ?? TYPE_CONFIG.autre
   const isAuthor   = !!currentUserId && (currentUserId === event.auteur_id || !!isAdmin)
-  const authorName = event.author ? `${event.author.prenom} ${event.author.nom}` : 'Auteur inconnu'
 
   const [expanded, setExpanded]       = useState(false)
   const [descOverflow, setDescOverflow] = useState(false)
@@ -172,9 +179,9 @@ export default function EventCard({ event, currentUserId, isAdmin }: Props) {
         </View>
       ) : null}
 
-      {/* Footer : auteur + bouton éditer */}
+      {/* Footer : date de publication + bouton éditer */}
       <View style={styles.footer}>
-        <Text style={styles.author}>Publié par {authorName}</Text>
+        <Text style={styles.author}>{publishedLabel(event.created_at)}</Text>
         {isAuthor && (
           <IconButton
             icon="pencil-outline"

@@ -31,15 +31,12 @@ type Props = {
   onReact: (reaction: string) => void
 }
 
-function timeAgo(dateStr: string): string {
+function publishedLabel(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 1)  return "à l'instant"
-  if (minutes < 60) return `il y a ${minutes}min`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24)   return `il y a ${hours}h`
-  const days = Math.floor(hours / 24)
-  return `il y a ${days}j`
+  const days = Math.floor(diff / 86400000)
+  if (days < 1)  return "Publié aujourd'hui"
+  if (days === 1) return 'Publié il y a 1 jour'
+  return `Publié il y a ${days} jours`
 }
 
 const TAG_COLORS: Record<string, string> = {
@@ -110,7 +107,6 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
     naturalDisplayedHeight > COLLAPSED_IMAGE_HEIGHT + 1
 
   const isAuthor    = !!currentUserId && (currentUserId === post.auteur_id || !!isAdmin)
-  const authorName  = post.author ? `${post.author.prenom} ${post.author.nom}` : 'Auteur inconnu'
   const userReaction = currentUserId
     ? (post.likes.find(l => l.user_id === currentUserId)?.reaction ?? null)
     : null
@@ -228,7 +224,7 @@ export default function NewsCard({ post, currentUserId, isAdmin, onReact }: Prop
       )}
 
       <View style={styles.footer}>
-        <Text style={styles.author}>Publié par {authorName} · {timeAgo(post.created_at)}</Text>
+        <Text style={styles.author}>{publishedLabel(post.created_at)}</Text>
         <View style={styles.actions}>
           {isAuthor && (
             <IconButton
