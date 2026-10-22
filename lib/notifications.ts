@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications'
 import { Platform } from 'react-native'
 import Constants from 'expo-constants'
 import { supabase } from './supabase'
+import { refreshWebPushSubscription } from './webPush'
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -12,6 +13,9 @@ Notifications.setNotificationHandler({
 })
 
 export async function registerForPushNotifications(userId: string): Promise<void> {
+  // PWA : Web Push (l'activation se fait par un bouton dans le profil, iOS exige un geste)
+  if (Platform.OS === 'web') return refreshWebPushSubscription()
+
   try {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
@@ -45,10 +49,11 @@ export async function sendNotification(
   accessToken: string,
 ): Promise<void> {
   try {
-    await supabase.functions.invoke('send-notification', {
+    const { error } = await supabase.functions.invoke('send-notification', {
       body: { type, titre },
       headers: { Authorization: `Bearer ${accessToken}` },
     })
+    if (error) console.warn('Send notification failed:', error)
   } catch (e) {
     console.warn('Send notification failed:', e)
   }
@@ -61,10 +66,11 @@ export async function sendBreakRecord(
   accessToken: string,
 ): Promise<void> {
   try {
-    await supabase.functions.invoke('send-break-record', {
+    const { error } = await supabase.functions.invoke('send-break-record', {
       body: { prenom, nom, valeur },
       headers: { Authorization: `Bearer ${accessToken}` },
     })
+    if (error) console.warn('Send break record notification failed:', error)
   } catch (e) {
     console.warn('Send break record notification failed:', e)
   }

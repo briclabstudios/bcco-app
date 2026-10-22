@@ -1,17 +1,26 @@
 import { useState, useCallback } from 'react'
-import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Platform } from 'react-native'
 import { Text, Button, Avatar, TextInput, ActivityIndicator, Checkbox, Switch, RadioButton } from 'react-native-paper'
 import { useRouter, useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { registerForPushNotifications } from '../../lib/notifications'
+import { getWebPushStatus, enableWebPush, disableWebPush, WebPushStatus } from '../../lib/webPush'
 import { colors } from '../../constants/theme'
 
 const ROLE_LABEL: Record<string, string> = {
   membre:    '👤 Membre',
   rédacteur: '✏️ Rédacteur',
   admin:     '⚙️ Admin',
+}
+
+const WEB_PUSH_TEXT: Record<WebPushStatus, string> = {
+  'unsupported':   'Ce navigateur ne permet pas de recevoir les notifications.',
+  'needs-install': "Sur iPhone/iPad, ajoutez d'abord l'app à l'écran d'accueil (Partager › Sur l'écran d'accueil), puis ouvrez-la depuis son icône pour activer les notifications.",
+  'denied':        'Les notifications sont bloquées pour ce site. Autorisez-les dans les réglages du navigateur.',
+  'off':           'Les notifications ne sont pas encore activées sur cet appareil.',
+  'on':            '✅ Notifications activées sur cet appareil.',
 }
 
 const DISCIPLINE_LABEL: Record<string, string> = {
@@ -33,6 +42,30 @@ export default function ProfilScreen() {
   const [breakMax, setBreakMax]     = useState<string>('')
   const [breakMaxAllTime, setBreakMaxAllTime] = useState<string>('')
   const [hasClubKey, setHasClubKey] = useState(false)
+  const [webPush, setWebPush]       = useState<WebPushStatus | null>(null)
+  const [webPushBusy, setWebPushBusy] = useState(false)
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') getWebPushStatus().then(setWebPush)
+    }, [])
+  )
+
+  async function toggleWebPush(enable: boolean) {
+    setWebPushBusy(true)
+    try {
+      if (enable) setWebPush(await enableWebPush())
+      else {
+        await disableWebPush()
+        setWebPush(await getWebPushStatus())
+      }
+    } catch (e) {
+      console.warn('Web push toggle failed:', e)
+      Alert.alert('Erreur', "Impossible d'activer les notifications sur cet appareil.")
+      setWebPush(await getWebPushStatus())
+    }
+    setWebPushBusy(false)
+  }
 
   // Redirection automatique vers la page de connexion si on n'est pas connecté
   useFocusEffect(
@@ -345,6 +378,35 @@ export default function ProfilScreen() {
             await refreshProfile()
           }}
         />
+        {Platform.OS === 'web' && webPush && (
+          <View style={styles.webPush}>
+            <Text style={styles.webPushText}>{WEB_PUSH_TEXT[webPush]}</Text>
+            {webPush === 'off' && (
+              <Button
+                mode="contained"
+                onPress={() => toggleWebPush(true)}
+                loading={webPushBusy}
+                disabled={webPushBusy}
+                buttonColor={colors.gold}
+                labelStyle={{ color: colors.background, fontWeight: 'bold' }}
+                icon="bell-ring"
+              >
+                Activer sur cet appareil
+              </Button>
+            )}
+            {webPush === 'on' && (
+              <Button
+                mode="text"
+                onPress={() => toggleWebPush(false)}
+                loading={webPushBusy}
+                disabled={webPushBusy}
+                textColor={colors.textMuted}
+              >
+                Désactiver sur cet appareil
+              </Button>
+            )}
+          </View>
+        )}
       </View>
 
       <Button
@@ -451,4 +513,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   notifLabel: { fontSize: 15, color: colors.text },
+  webPush: {
+    gap: 10,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  webPushText: { fontSize: 14, color: colors.textMuted },
 })

@@ -1,6 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
+import { sendPushToProfiles } from '../_shared/push.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -40,12 +39,11 @@ Deno.serve(async (req) => {
     : `Nouvel événement BCCO : ${titre}`
   const screen = type === 'actus' ? 'actus' : 'agenda'
 
-  // Récupérer les tokens des membres abonnés (hors auteur)
+  // Membres abonnés à ce type de notification (PWA et/ou app native)
   const { data: profiles } = await supabaseAdmin
     .from('profiles')
-    .select('push_token')
+    .select('id, push_token')
     .eq(notifField, true)
-    .not('push_token', 'is', null)
 
   if (!profiles?.length) {
     return new Response(JSON.stringify({ sent: 0 }), {
@@ -53,24 +51,13 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Envoi par lots de 100 (limite Expo)
-  const messages = profiles.map(p => ({
-    to:    p.push_token,
+  const result = await sendPushToProfiles(supabaseAdmin, profiles, {
     title: 'BCCO Ronchin',
     body,
     data:  { screen },
-    sound: 'default',
-  }))
+  })
 
-  for (let i = 0; i < messages.length; i += 100) {
-    await fetch(EXPO_PUSH_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body:    JSON.stringify(messages.slice(i, i + 100)),
-    })
-  }
-
-  return new Response(JSON.stringify({ sent: messages.length }), {
+  return new Response(JSON.stringify({ sent: result.web + result.expo, ...result }), {
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
   })
 })

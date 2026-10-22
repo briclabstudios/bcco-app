@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bcco-app-v2'
+const CACHE_NAME = 'bcco-app-v3'
 const SHELL = './index.html'
 
 self.addEventListener('install', (event) => {
@@ -51,6 +51,42 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => cached)
       return cached || network
+    })
+  )
+})
+
+// Notifications Web Push envoyées par les fonctions Supabase (send-notification, send-break-record)
+self.addEventListener('push', (event) => {
+  let message = {}
+  try {
+    message = event.data ? event.data.json() : {}
+  } catch {
+    message = { body: event.data ? event.data.text() : '' }
+  }
+  event.waitUntil(
+    self.registration.showNotification(message.title || 'BCCO Ronchin', {
+      body: message.body || '',
+      icon: './icons/icon-192.png',
+      badge: './icons/icon-192.png',
+      data: message.data || {},
+    })
+  )
+})
+
+// Clic sur une notification : ouvre l'écran concerné (dans l'app déjà ouverte si possible)
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const screens = { actus: 'actualites', agenda: 'agenda', breakboard: 'breakboard' }
+  const path = screens[(event.notification.data || {}).screen] || ''
+  const url = new URL(path, self.registration.scope).href
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const client = clients.find((c) => c.url.startsWith(self.registration.scope))
+      if (client) {
+        return client.focus().then((c) => (c && 'navigate' in c ? c.navigate(url) : c))
+      }
+      return self.clients.openWindow(url)
     })
   )
 })
