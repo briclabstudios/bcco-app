@@ -86,6 +86,9 @@ export default function ProfilScreen() {
     ? `${profile.prenom[0]}${profile.nom[0]}`.toUpperCase()
     : '?'
 
+  // Sur la PWA, les préférences n'ont de sens qu'une fois les notifications activées sur l'appareil
+  const notifsDisabled = Platform.OS === 'web' && webPush !== 'on'
+
   function startEditing() {
     setPrenom(profile?.prenom ?? '')
     setNom(profile?.nom ?? '')
@@ -360,24 +363,6 @@ export default function ProfilScreen() {
       {/* Préférences notifications */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Notifications</Text>
-        <NotifRow
-          label="Actualités"
-          value={profile?.notif_actus ?? true}
-          onToggle={async (v) => {
-            await supabase.from('profiles').update({ notif_actus: v }).eq('id', session.user.id)
-            if (v) registerForPushNotifications(session.user.id)
-            await refreshProfile()
-          }}
-        />
-        <NotifRow
-          label="Événements"
-          value={profile?.notif_agenda ?? true}
-          onToggle={async (v) => {
-            await supabase.from('profiles').update({ notif_agenda: v }).eq('id', session.user.id)
-            if (v) registerForPushNotifications(session.user.id)
-            await refreshProfile()
-          }}
-        />
         {Platform.OS === 'web' && webPush && (
           <View style={styles.webPush}>
             <Text style={styles.webPushText}>{WEB_PUSH_TEXT[webPush]}</Text>
@@ -407,6 +392,26 @@ export default function ProfilScreen() {
             )}
           </View>
         )}
+        <NotifRow
+          label="Actualités"
+          value={profile?.notif_actus ?? true}
+          disabled={notifsDisabled}
+          onToggle={async (v) => {
+            await supabase.from('profiles').update({ notif_actus: v }).eq('id', session.user.id)
+            if (v) registerForPushNotifications(session.user.id)
+            await refreshProfile()
+          }}
+        />
+        <NotifRow
+          label="Événements"
+          value={profile?.notif_agenda ?? true}
+          disabled={notifsDisabled}
+          onToggle={async (v) => {
+            await supabase.from('profiles').update({ notif_agenda: v }).eq('id', session.user.id)
+            if (v) registerForPushNotifications(session.user.id)
+            await refreshProfile()
+          }}
+        />
       </View>
 
       <Button
@@ -442,11 +447,11 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-function NotifRow({ label, value, onToggle }: { label: string; value: boolean; onToggle: (v: boolean) => void }) {
+function NotifRow({ label, value, disabled, onToggle }: { label: string; value: boolean; disabled?: boolean; onToggle: (v: boolean) => void }) {
   return (
-    <View style={styles.notifRow}>
-      <Text style={styles.notifLabel}>{label}</Text>
-      <Switch value={value} onValueChange={onToggle} color={colors.gold} />
+    <View style={[styles.notifRow, disabled && styles.notifRowDisabled]}>
+      <Text style={[styles.notifLabel, disabled && { color: colors.textMuted }]}>{label}</Text>
+      <Switch value={value} onValueChange={onToggle} color={colors.gold} disabled={disabled} />
     </View>
   )
 }
@@ -513,11 +518,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   notifLabel: { fontSize: 15, color: colors.text },
+  notifRowDisabled: { opacity: 0.5 },
   webPush: {
     gap: 10,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   webPushText: { fontSize: 14, color: colors.textMuted },
 })
