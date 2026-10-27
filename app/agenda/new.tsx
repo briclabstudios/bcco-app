@@ -165,6 +165,7 @@ export default function NewEventScreen() {
         <Calendar
           onDayPress={day => { setDateDebut(day.dateString); setShowDebutCal(false) }}
           markedDates={dateDebut ? { [dateDebut]: { selected: true, selectedColor: colors.gold } } : {}}
+          firstDay={1}
           theme={calendarTheme}
           style={styles.inlineCalendar}
         />
@@ -193,6 +194,7 @@ export default function NewEventScreen() {
           onDayPress={day => { setDateFin(day.dateString); setShowFinCal(false) }}
           markedDates={dateFin ? { [dateFin]: { selected: true, selectedColor: colors.gold } } : {}}
           minDate={dateDebut || undefined}
+          firstDay={1}
           theme={calendarTheme}
           style={styles.inlineCalendar}
         />
