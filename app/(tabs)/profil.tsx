@@ -5,7 +5,7 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { registerForPushNotifications } from '../../lib/notifications'
+import { registerForPushNotifications, sendBreakRecord } from '../../lib/notifications'
 import { getWebPushStatus, enableWebPush, disableWebPush, WebPushStatus } from '../../lib/webPush'
 import { colors } from '../../constants/theme'
 
@@ -159,6 +159,8 @@ export default function ProfilScreen() {
     }
     const parsedBreak = breakMax.trim() !== '' ? parseInt(breakMax.trim(), 10) : null
     const parsedBreakAllTime = breakMaxAllTime.trim() !== '' ? parseInt(breakMaxAllTime.trim(), 10) : null
+    const newBreak = isNaN(parsedBreak as number) ? null : parsedBreak
+    const previousBreak = profile?.break_max ?? null
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -166,7 +168,7 @@ export default function ProfilScreen() {
         nom: nom.trim(),
         disciplines,
         avatar_url: newAvatarUrl,
-        break_max: isNaN(parsedBreak as number) ? null : parsedBreak,
+        break_max: newBreak,
         break_max_all_time: isNaN(parsedBreakAllTime as number) ? null : parsedBreakAllTime,
         has_club_key: hasClubKey,
       })
@@ -174,6 +176,10 @@ export default function ProfilScreen() {
     if (error) {
       Alert.alert('Erreur', 'Impossible de sauvegarder les modifications.')
     } else {
+      // Même règle que le Break board : nouveau break max de la saison supérieur au précédent
+      if (newBreak !== null && newBreak > (previousBreak ?? 0)) {
+        sendBreakRecord(prenom.trim(), nom.trim(), newBreak, session!.access_token)
+      }
       await refreshProfile()
       setEditing(false)
     }
